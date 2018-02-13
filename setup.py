@@ -2,6 +2,11 @@ import os
 import sys
 import subprocess
 
+# -------------------------------------------#
+# author: sean lee                           #
+# email: xmlee97@gmail.com                   #
+#--------------------------------------------#
+
 try:
     from setuptools import setup, find_packages
 except ImportError:
