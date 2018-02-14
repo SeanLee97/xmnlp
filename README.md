@@ -1,6 +1,6 @@
 # xmnlp
 
-轻量级的中文自然语言处理工具
+小明NLP —— 轻量级的中文自然语言处理工具
 
 A Lightweight Chinese Natural Language Processing Toolkit.
 
