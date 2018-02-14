@@ -172,11 +172,17 @@ print(xm.keyword(doc))
 pirnt(xm.keyphrase(doc))
 ```
 result: 
+
 keyphrase: 
+
 自然语言理解系统自然语言转化计算机程序易于形式
+
 自然语言生成系统计算机数据转化自然语言
+
 自然语言认知指让电脑懂人类语言
+
 这此领域中探讨自然语言
+
 自然语言人工智能语言学领域分支学科
 
 keyword: 
