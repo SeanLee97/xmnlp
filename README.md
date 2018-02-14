@@ -211,6 +211,13 @@ import xmnlp as xm
 doc = """这件衣服的质量也太差了吧！一穿就烂！"""
 print(xm.sentiment())
 ```
+
+## 自定义模型
+支持用户使用自己的语料训练模型，训练例子在[examples](https://github.com/SeanLee97/xmnlp/tree/master/examples) 的trainer_\*中
+
+## 训练语料
+[语料百度网盘](https://pan.baidu.com/s/1o9FHIp8) 密码: s3u3
+
 更多例子请查看[examples](https://github.com/SeanLee97/xmnlp/tree/master/examples)
 
 # Reference:
