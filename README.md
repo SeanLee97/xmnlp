@@ -218,6 +218,7 @@ print(xm.sentiment())
 * 人民日报语料
 * 结巴分词分词数据
 * snownlp情感分析语料
+
 本项目受到以下项目的启发
 * [jieba](https://github.com/fxsjy/jieba)
 * [snownlp](https://github.com/isnowfy/snownlp)
