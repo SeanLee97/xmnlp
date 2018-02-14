@@ -18,7 +18,7 @@ A Lightweight Chinese Natural Language Processing Toolkit.
 ## 支持环境
 ```
 Linux / Mac os (window 未测试过)
-python2 / python3
+python2 / python3(推荐)
 ```
 ## 安装
 ```
