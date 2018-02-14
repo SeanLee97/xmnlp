@@ -38,6 +38,11 @@ python setup.py install
 * 情感分析： naive bayes
  
 # 使用文档
+支持两种方式调用
+* 通过XmNLP实例对象的方式, 特点：
+ * 方便使用系统停用词，只需XmNLP(stopword=True) 即可开启
+* 通过方法直接调用，特点： 快捷方便
+
 ## 分词
 ### example 1
 ```python
@@ -49,7 +54,13 @@ doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
 
 xm = XmNLP(doc)
 xm.set_userdict('/path/to/userdict.txt')
-print(xm.seg())
+print(xm.seg(hmm=True))
+
+'''
+xm  = XmNLP()
+xm.set_userdict('/path/to/userdict.txt')
+print(xm.seg(doc, hmm=True))
+'''
 ```
 
 ### example 2
@@ -60,7 +71,7 @@ doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
 在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。 
 自然语言生成系统把计算机数据转化为自然语言。自然语言理解系统把自然语言转化为计算机程序更易于处理的形式。"""
 
-print(xm.seg(doc))
+print(xm.seg(doc, hmm=True))
 ```
 result: ['自然语言', '处理', ':', '是', '人工智能', '和', '语言学', '领域', '的', '分支', '学科', '。', '在', '这此', '领域', '中', '探讨', '如何', '处理', '及', '运用', '自然语言', '；', '自然语言', '认知', '则', '是', '指让', '电脑', '“', '懂', '”', '人类', '的', '语言', '。', '自然语言', '生成', '系统', '把', '计算机', '数据', '转化', '为', '自然语言', '。', '自然语言', '理解', '系统', '把', '自然语言', '转化', '为', '计算机程序', '更', '易于', '处理', '的', '形式', '。']
 
@@ -76,6 +87,12 @@ doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
 xm = XmNLP(doc)
 xm.set_userdict('/path/to/userdict.txt')
 print(list(xm.tag()))
+
+'''
+xm  = XmNLP()
+xm.set_userdict('/path/to/userdict.txt')
+print(xm.tag(doc, hmm=True))
+'''
 ```
 
 ### example 2
@@ -99,6 +116,11 @@ doc = """这理风景绣丽，而且天汽不错，我的心情各外舒畅!"""
 
 xm = XmNLP(doc)
 print(xm.checker())
+
+'''
+xm  = XmNLP()
+print(xm.checker(doc))
+'''
 ```
 
 ### example 2
@@ -126,6 +148,14 @@ xm.set_stopword('/path/to/user_stopword.txt') # 使用用户自定义停用词
 print(xm.keyword())
 # keyphrase
 pirnt(xm.keyphrase())
+
+'''
+xm  = XmNLP()
+# keyword
+print(xm.keyword(doc))
+# keyphrase
+pirnt(xm.keyphrase(doc))
+'''
 ```
 ### example 2
 ```python
@@ -161,6 +191,11 @@ doc = """这件衣服的质量也太差了吧！一穿就烂！"""
 
 xm  = XmNLP(doc)
 print(xm.sentiment())
+
+'''
+xm  = XmNLP()
+print(xm.sentiment(doc))
+'''
 ```
 
 ### example 2
@@ -170,3 +205,16 @@ import xmnlp as xm
 doc = """这件衣服的质量也太差了吧！一穿就烂！"""
 print(xm.sentiment())
 ```
+更多例子请查看[examples](https://github.com/SeanLee97/xmnlp/tree/master/examples)
+
+# Reference:
+本项目采用的数据主要有：
+* 人民日报语料
+* 结巴分词分词数据
+* snownlp情感分析语料
+本项目受到以下项目的启发
+* [jieba](https://github.com/fxsjy/jieba)
+* [snownlp](https://github.com/isnowfy/snownlp)
+
+# License
+[MIT](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)
