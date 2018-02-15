@@ -1,2 +1,0 @@
-include *.md
-recursive-include xmnlp *.txt *.pickle *.pickle.3
