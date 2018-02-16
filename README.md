@@ -1,6 +1,6 @@
 # xmnlp
 
-小明NLP —— 轻量级的中文自然语言处理工具
+小明NLP —— 轻量级中文自然语言处理工具
 
 A Lightweight Chinese Natural Language Processing Toolkit.
 
@@ -39,8 +39,7 @@ python setup.py install
  
 # 使用文档
 支持两种方式调用
-* 通过XmNLP实例对象的方式, 特点：
- * 方便使用系统停用词，只需XmNLP(stopword=True) 即可开启
+* 通过XmNLP实例对象的方式, 特点：方便使用系统停用词，只需XmNLP(stopword=True) 即可开启
 * 通过方法直接调用，特点： 快捷方便
 
 ## 分词
