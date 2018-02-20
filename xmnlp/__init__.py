@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 __author__ = 'sean lee'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 import sys
 if sys.version_info[0] == 2:
