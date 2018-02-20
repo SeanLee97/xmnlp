@@ -167,8 +167,14 @@ class DAG(object):
                         if len(arr) >= 3:
                             word, freq, tag = arr[:3]
                         elif len(arr) == 2:
-                            word, freq = arr[:2]
-                            tag = 'un'
+                            word, x = arr[:2]
+                            if x.isdigit():
+                                freq = x
+                                tag = 'un'
+                            else:
+                                freq = self.get_freq(word)
+                                tag = x
+
                         elif len(arr) == 1:
                             word = arr[0]
                             freq = self.get_freq(word)
