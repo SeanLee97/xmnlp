@@ -215,7 +215,6 @@ class DAG(object):
         return dag
 
     def get_route(self, sent, dag, r=None, reverse=True):
-
         route = {}
         N = len(sent)
         log_total = log(self.dict['total'])
@@ -225,37 +224,34 @@ class DAG(object):
                 r[N] = (1, 0)
             for idx in range(N - 1, -1, -1):
                 if r != None:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log_total + route[x+1][0]+r[x+1][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) / log_total + route[x+1][0] * (r[x+1][0]), x) for x in dag[idx])
                 else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log_total + route[x+1][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) / log_total + route[x+1][0], x) for x in dag[idx])
         else:
             for idx in range(N):
                 route[idx] = (0, 0)
 
             for idx in range(N):
                 if r != None:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log_total + route[x][0]+r[x][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) / log_total + route[x][0] * (r[x][0]), x) for x in dag[idx])
                 else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log_total + route[x][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) / log_total + route[x][0], x) for x in dag[idx])
         return route
 
     def tag(self, sent):
-        pos = []
-
-        for word in self.decode(sent):
-            if word in self.dict['word_tag']:
-                pos.append((word, self.dict['word_tag'][word]))
-            else:
-                pos.append((word, 'un'))
-        return pos
+        s = self.seg(sent)
+        lst = list(s)
+        ret = self.hmm_tagger.tag(lst)
+        for w, f in ret:
+            yield w, self.dict['word_tag'].get(w, f)
 
     def seg(self, sent):
         return self.decode(sent)
 
     def decode(self, sent):
         dag = self.get_dag(sent)
-        r = self.get_route(sent, dag, reverse=False)
-        route = self.get_route(sent, dag, r=r, reverse=True)
+        r = self.get_route(sent, dag, reverse=True)
+        route = self.get_route(sent, dag, r=r, reverse=False)
 
         x = 0
         buf = ''
@@ -273,10 +269,11 @@ class DAG(object):
                     else:
                         if not self.dict['counter'].get(buf):
                             if self.hmm:
-                                for x in self.hmm_seg(buf):
-                                    yield x
+                                for elem in self.hmm_seg(buf):
+                                    yield elem
                             else:
-                                yield buf
+                                for elem in buf:
+                                    yield elem
                         else:
                             for elem in buf:
                                 yield elem
@@ -286,16 +283,17 @@ class DAG(object):
         if buf:
             if len(buf) == 1:
                 yield buf
-            elif not self.dict['counter'].get(buf):
+            else:
                 if not self.dict['counter'].get(buf):
                     if self.hmm:
-                        for x in self.hmm_seg(buf):
-                            yield x
+                        for elem in self.hmm_seg(buf):
+                            yield elem
                     else:
-                        yield buf
-            else:
-                for elem in buf:
-                    yield elem
+                        for elem in buf:
+                            yield elem
+                else:
+                    for elem in buf:
+                        yield elem
 
     def hmm_seg(self, sent):
         ret = self.hmm_segger.tag(sent)
@@ -312,12 +310,3 @@ class DAG(object):
                 tmp += i[0]
         if tmp:
             yield tmp
-
-    '''
-    def hmm_tag(self, sent):
-        s = self.hmm_seg(sent)
-        lst = []
-        [lst.append(w) for w in s]
-        ret = self.hmm_tagger.tag(lst)
-        return ret
-    '''
