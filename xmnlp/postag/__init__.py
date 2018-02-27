@@ -41,7 +41,8 @@ def loader():
             postagger = postag.Postag()
             model_path = C_PATH.postag['model']['dag']
             hmm_seg_path = C_PATH.postag['model']['seg']
-            postagger.load(model_path, hmm_seg_path)
+            hmm_tag_path = C_PATH.postag['model']['tag']
+            postagger.load(model_path, hmm_seg_path, hmm_tag_path)
         except:
             pass
     
