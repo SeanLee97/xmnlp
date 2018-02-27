@@ -127,7 +127,7 @@ class Checker(object):
                 if word not in self.words:
                     self.words[word] += 1
                 else:
-                	self.words[word] += 1
+                    self.words[word] += 1
 
             data = ''.join(words)
             # init curr
@@ -188,11 +188,19 @@ class Checker(object):
         return probs
 
     def correct(self, words, window=4):
+        if len(words) < 1:
+            return ''.join(words)
+
         res = ''
         pos = 0
         probs = {}
         while pos < len(words):
             sent = ''.join(words[pos: pos + window])
+            if len(sent) == 1:
+                res += sent
+                pos += window
+                continue
+
             probs = self.ngram_proba(sent)
             wrongs = []
             idx = 0
@@ -228,18 +236,23 @@ class Checker(object):
 
             pos += window
 
-        # process last one
-        if len(probs) > 1 and probs[-1][1] < self.threhold and probs[-2][1] > self.threhold:
-            txt = ''.join(probs[-1][0])
-            py = ''.join(translate(txt))
-            edits = list(filter(lambda x: len(x) == len(txt) and ''.join(translate(x)) == py, self.levenshtein(txt)))
-
-            if len(edits) > 0:
-                candidates = []
-                for word in edits:
-                    if word in self.words:
-                        candidates.append((word, self.words[word]))
-                    candidates = sorted(candidates, key=lambda x: x[1], reverse=True)
-                if len(candidates) > 0:
-                	res = str(res[:-len(txt)]) + candidates[0][0]
+        # process head and tail
+        ps = []
+        if probs[1][1] < self.threhold:
+            ps.append((''.join(probs[1][0]), probs[1]))
+        if probs[-1][1] < self.threhold:
+            ps.append((''.join(probs[-1][0]), probs[-1]))
+        for word, prob in ps:
+            if prob[1] < self.threhold:
+                py = ''.join(translate(word))
+                edits = list(filter(lambda x: len(x) == len(word) and ''.join(translate(x)) == py, self.levenshtein(word)))
+                if len(edits) > 0:
+                    candidates = []
+                    for ch in edits:
+                        if ch in self.words:
+                            p = self.calc_proba((ch[0], ch[1]))
+                            candidates.append((ch, p))
+                        candidates = sorted(candidates, key=lambda x: x[1], reverse=True)
+                    if len(candidates) > 0 and candidates[0][1] > prob[1]:
+                        res = res.replace(word, candidates[0][0])
         return res
