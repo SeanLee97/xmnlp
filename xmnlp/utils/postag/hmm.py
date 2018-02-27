@@ -35,6 +35,7 @@ if sys.version_info[0] == 2:
 import pickle
 import gzip
 import os
+from math import log
 
 from collections import defaultdict
 
@@ -52,6 +53,7 @@ class HMM(object):
             self.N == N 
             
         self.bems = bems
+        self.line_total = -1
 
         # n-gram counter
         self.uni = defaultdict(int)
@@ -68,7 +70,7 @@ class HMM(object):
         # trans probs
         self._trans_prob = defaultdict(int)
 
-        self.start_q = {'b': 0.7689828525554734, 'e': 0.0, 'm': 0., 's': 0.2310171474445266}
+        self._start_prob = {}
 
     def save(self, fname, iszip=True):
         d = {}
@@ -132,6 +134,7 @@ class HMM(object):
                     line = line.strip()
                     if len(line) == 0:
                         continue
+                    self.line_total += 1
                     datas.append(map(lambda x: x.split('/'), line.split()))
 
         return datas
@@ -167,8 +170,8 @@ class HMM(object):
 
                 curr.pop(0)
 
-        self.words = set([key[0] for key in self.emit.keys()])        
-
+        self.words = set([key[0] for key in self.emit.keys()])
+        
         for (word,tag) in self.emit:
             self._emit_prob[(word,tag)] = self.calc_e(word,tag)
 
@@ -178,6 +181,11 @@ class HMM(object):
         else:
             for gram in list(self.bi):
                 self._trans_prob[gram] = self.calc_trans(gram)
+
+        for s in self.state:
+            t = self.uni.get(s, 0)
+            t = log(t) if self.bems else t
+            self._start_prob[s] = t * 1.0 / self.line_total
 
 
     def calc_e(self, word, tag):
@@ -192,9 +200,12 @@ class HMM(object):
         else:
             x = self.bi[tuple(gram)]
             y = self.uni[gram[0]]
-        return float((x + 1)) / (y + len(self.state)**2)
+        return (x + 1.0) / (y + len(self.state))
 
     def viterbi(self, sent):
+        if self.bems:
+            self._start_prob['m'] = 0.0
+            self._start_prob['e'] = 0.0
 
         def get_states(k):
             if k <= 0:
@@ -207,6 +218,9 @@ class HMM(object):
                 return BOS
             else:
                 return sent[k]
+
+        def smooth(x):
+            return x + 1e-12
 
         V = {}
         path = {}
@@ -223,41 +237,33 @@ class HMM(object):
                     word = UNK
                 for u in get_states(k-1):
                     for v in get_states(k):
-                        V[k,u,v], prev_w = max([(V[k-1,w,u] * self._trans_prob[(w,u,v)] * self._emit_prob[(word,v)], w) for w in get_states(k-2)])
+                        V[k,u,v], prev_w = max([(V[k-1,w,u] * smooth(self._trans_prob[(w,u,v)] * self._emit_prob[(word,v)]), w) for w in get_states(k-2) if V[k-1, w] > 0])
                         temp_path[u,v] = path[prev_w, u] + [v]
                 path = temp_path
             # last step
             prob,umax,vmax = max([(V[len(sent),u,v] * self._trans_prob[(u,v,BOS)],u, v) for u in self.state for v in self.state])
             return (prob, path[umax,vmax])
         else:
-            # init
-            V[0, BOS] = 1
-            path[BOS] = []
-
-            for u in self.state:
-                if self.bems:   
-                    V[0, u] = self.start_q[u] * self._emit_prob[sent[0], u]
-                else:
-                    V[0, u] = 1 * self._emit_prob[sent[0], u]
-                    pass
-                path[u] = [u]
-
+            V = [{}]
+            path = {}
+            for s in self.state:
+                V[0][s] = self._start_prob[s] * smooth(self._emit_prob[(sent[0], s)])
+                path[s] = [s]
             N = len(sent)
             # run
             for k in range(1, N):
+                V.append({})
                 temp_path = {}
                 word = get_word(sent, k)
                 if word not in self.words:
                     word = UNK
                 for u in get_states(k):
-                    V[k,u], state = max([(V[k-1, w] * self._trans_prob[(w, u)] * self._emit_prob[(word, u)], w) for w in get_states(k)])
+                    V[k][u], state = max([(V[k-1][w] * smooth(self._trans_prob[(w, u)] * self._emit_prob[(word, u)]), w) for w in get_states(k) if V[k-1][w] > 0])
                     temp_path[u] = path[state] + [u]
                 path = temp_path
                 #print(path)
-            # last step
-            prob, state = max([(V[N-1, u], u) for u in self.state])
+            prob, state = max([(V[N-1][u], u) for u in self.state])
             return (prob, path[state])
-
 
     def tag(self, sent):
         prob, tags = self.viterbi(sent)
