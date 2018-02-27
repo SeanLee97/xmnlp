@@ -7,8 +7,8 @@ A Lightweight Chinese Natural Language Processing Toolkit.
 # 功能
 
 * 中文分词 & 词性标注
-  * 支持繁體
-  * 支持自定义词典
+  * 支持繁體
+  * 支持自定义词典
 * 文本纠错
 * 文本摘要 & 关键词提取
 * 情感分析
