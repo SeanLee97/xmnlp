@@ -103,12 +103,17 @@ class SysTrainer(Trainer):
 
         # pinyin
         PinyinTrainer.pinyin(C_PATH.pinyin['corpus']['pinyin'], C_PATH.pinyin['model']['pinyin'])
+        
         # train postag dag
         PostagTrainer.dag(C_PATH.postag['corpus']['dag'], C_PATH.postag['model']['dag'])
         # train seg hmm
         PostagTrainer.hmm(C_PATH.postag['corpus']['seg'], C_PATH.postag['model']['seg'])
+        # train tag hmm
+        PostagTrainer.hmm(C_PATH.postag['corpus']['tag'], C_PATH.postag['model']['tag'])
+        
         # checker
         CheckerTrainer.checker(C_PATH.checker['corpus']['checker'], C_PATH.checker['model']['checker'])
+        
         # sentiment
         SentimentTrainer.sentiment(C_PATH.sentiment['corpus']['pos'], C_PATH.sentiment['corpus']['neg'], C_PATH.sentiment['model']['sentiment'])
         
