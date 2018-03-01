@@ -41,6 +41,7 @@ _checker_ = os.path.join(_root_, 'checker')
 _sentiment_ = os.path.join(_root_, 'sentiment')
 _pinyin_ = os.path.join(_root_, 'pinyin')
 
+root_f = lambda x: os.path.join(_root_, x)
 corpus_f = lambda x: os.path.join(_corpus_, x)
 postag_f = lambda x: os.path.join(_postag_, x)
 checker_f = lambda x: os.path.join(_checker_, x)
@@ -90,6 +91,6 @@ sentiment = {
 
 stopword = {
     'corpus': {
-        'stopword': corpus_f('stopword'),
+        'stopword': root_f('stopword.txt'),
     }
 }
