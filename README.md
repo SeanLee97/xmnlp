@@ -18,7 +18,7 @@ A Lightweight Chinese Natural Language Processing Toolkit.
 
 ## 支持环境
 ```
-Linux / Mac os (window 未测试过)
+Linux / Mac os (window 未测试)
 python2 / python3(推荐)
 ```
 ## 安装
@@ -27,6 +27,11 @@ git clone https://github.com/SeanLee97/xmnlp.git
 cd /path/to/xmnlp
 pip install -r requirements.txt
 python setup.py install
+```
+
+## 依赖库
+```
+numpy
 ```
 
 # 算法
