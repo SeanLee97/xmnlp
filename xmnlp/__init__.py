@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 __author__ = 'sean lee'
-__version__ = '0.1.1'
+__version__ = '0.1.5'
 
 import sys
 if sys.version_info[0] == 2:
@@ -68,6 +68,9 @@ def load_stopword(fpath):
                 stopwords.append(line)
     return stopwords
 
+def set_userdict(userdict):
+    postagger.set_userdict(userdict)
+
 class XmNLP(object):
 
     def __init__(self, doc=None, stopword=False, *args, **kwargs):
@@ -89,6 +92,7 @@ class XmNLP(object):
     def seg(self, txt=None, hmm=True):
         if self.userdict != None:
             postagger.set_userdict(self.userdict)
+            self.userdict = None
 
         if self.doc == None and txt == None:
             return None
@@ -100,6 +104,7 @@ class XmNLP(object):
     def tag(self, txt=None, hmm=True):
         if self.userdict != None:
             postagger.set_userdict(self.userdict)
+            self.userdict = None
         if self.doc == None and txt == None:
             return None
         if txt != None:
@@ -153,16 +158,12 @@ class XmNLP(object):
         return tag_dict.get(tag, 'undefined !')
 
 # quick to xmnlp
-def seg(txt, hmm=True, userdict=None):
+def seg(txt, hmm=True):
     txt = get_text(txt)
-    if userdict != None:
-        postagger.set_userdict(userdict)
     return postagger.seg(txt, hmm)
 
-def tag(txt, hmm=True, userdict=None):
+def tag(txt, hmm=True):
     txt = get_text(txt)
-    if userdict != None:
-        postagger.set_userdict(userdict)
     return postagger.tag(txt, hmm)
 
 def keyword(txt, k=10, stopword=None, 
