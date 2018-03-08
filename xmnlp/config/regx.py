@@ -34,6 +34,7 @@ if sys.version_info[0] == 2:
 import re
 
 zh = re.compile(r'([\u4E00-\u9FA5]+)', flags=re.UNICODE)
-eng = re.compile(r'[a-zA-Z0-9]+', flags=re.UNICODE)
-digt = re.compile(r'[\.0-9]+', flags=re.UNICODE)
+zh_eng = re.compile(r'([\u4E00-\u9FD5a-zA-Z0-9+#&\._%]+)', flags=re.UNICODE)
 skip = re.compile(r'(\r\n|\s)', flags=re.UNICODE)
+eng = re.compile(r'[a-zA-Z0-9+#&\._%]+', flags=re.UNICODE)
+digt = re.compile(r'[\.0-9]+', flags=re.UNICODE)
