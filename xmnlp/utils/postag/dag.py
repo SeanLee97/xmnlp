@@ -218,22 +218,23 @@ class DAG(object):
         route = {}
         N = len(sent)
         log_total = log(self.dict['total'])
+
         if reverse:
-            route[N] = (0, 0)
+            route[N] = (1, 0)
             if r != None:
                 r[N] = (1, 0)
             for idx in range(N - 1, -1, -1):
                 if r != None:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) / log_total + route[x+1][0] * (r[x+1][0]), x) for x in dag[idx])
+                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x+1]) or 1) / log_total + route[x+1][0]) * r[x+1][0], x) for x in dag[idx])
                 else:
                     route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) / log_total + route[x+1][0], x) for x in dag[idx])
         else:
             for idx in range(N):
-                route[idx] = (0, 0)
+                route[idx] = (log(self.dict['counter'].get(sent[idx]) or 1) / log_total, 0)
 
             for idx in range(N):
                 if r != None:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) / log_total + route[x][0] * (r[x][0]), x) for x in dag[idx])
+                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x-1]) or 1) / log_total + route[x][0]) * r[x][0], x) for x in dag[idx])
                 else:
                     route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) / log_total + route[x][0], x) for x in dag[idx])
         return route
@@ -250,8 +251,8 @@ class DAG(object):
 
     def decode(self, sent):
         dag = self.get_dag(sent)
-        r = self.get_route(sent, dag, reverse=True)
-        route = self.get_route(sent, dag, r=r, reverse=False)
+        r = self.get_route(sent, dag, reverse=False)
+        route = self.get_route(sent, dag, r=r, reverse=True)
 
         x = 0
         buf = ''
