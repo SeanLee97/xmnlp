@@ -32,6 +32,7 @@ python setup.py install
 ## 依赖库
 ```
 numpy
+cPickle #(python2.7)
 ```
 
 # 算法
