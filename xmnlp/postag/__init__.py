@@ -74,7 +74,6 @@ def tag_loader():
             tagger = postagger
         except Exception as e:
             raise ValueError('tagger load failed!', e)
-
     
 def set_userdict(fpath):
     dag_loader()
