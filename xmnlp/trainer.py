@@ -100,7 +100,7 @@ class SysTrainer(Trainer):
     def all():
         logger.info('start to train all model...')
         from .config import path as C_PATH
-
+        
         # pinyin
         PinyinTrainer.pinyin(C_PATH.pinyin['corpus']['pinyin'], C_PATH.pinyin['model']['pinyin'])
         
@@ -113,7 +113,7 @@ class SysTrainer(Trainer):
         
         # checker
         CheckerTrainer.checker(C_PATH.checker['corpus']['checker'], C_PATH.checker['model']['checker'])
-        
+
         # sentiment
         SentimentTrainer.sentiment(C_PATH.sentiment['corpus']['pos'], C_PATH.sentiment['corpus']['neg'], C_PATH.sentiment['model']['sentiment'])
         

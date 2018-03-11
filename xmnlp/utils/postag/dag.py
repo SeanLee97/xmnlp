@@ -31,10 +31,13 @@ if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
     range = xrange 
+    import cPickle as pickle
+else:
+    import pickle
 
 import os
 import gzip 
-import pickle 
+ 
 
 from math import log
 from .hmm import HMM
@@ -105,23 +108,21 @@ class DAG(object):
             self.hmm = False
             return
 
-        if segfname == None:
-            return
-        try:
-            self.hmm_segger = HMM(bems=True)
-            self.hmm_segger.load(segfname)
-        except Exception as e:
-            print('Error: load seg hmm model failed, ', e)
-            self.hmm = False
+        if segfname != None:
+            try:
+                self.hmm_segger = HMM(bems=True)
+                self.hmm_segger.load(segfname)
+            except Exception as e:
+                print('Error: load seg hmm model failed, ', e)
+                self.hmm = False
 
-        if tagfname == None:
-            return
-        try:
-            self.hmm_tagger = HMM(bems=False)
-            self.hmm_tagger.load(tagfname)
-        except Exception as e:
-            print('Error: load tag hmm model failed, ', e)
-            self.hmm = False
+        if tagfname != None:
+            try:
+                self.hmm_tagger = HMM(bems=False)
+                self.hmm_tagger.load(tagfname)
+            except Exception as e:
+                print('Error: load tag hmm model failed, ', e)
+                self.hmm = False
 
     def get_freq(self, word):
         total = float(self.default_dict['total'])

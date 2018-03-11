@@ -42,10 +42,19 @@ class Postag(object):
 
     def userdict(self, fpath):
         self.dag.userdict(fpath)
-
+    
     def load(self, fname, seg_hmm=None, tag_hmm=None):
         self.dag.load(fname)
         self.dag.load_hmm(seg_hmm, tag_hmm)
+        
+    def load_dag(self, fname):
+        self.dag.load(fname)
+
+    def load_seg(self, fname):
+        self.dag.load_hmm(segfname=fname)
+
+    def load_tag(self, fname):
+        self.dag.load_hmm(tagfname=fname)
 
     def train(self, srcfname, outfname):
         self.dag.train(srcfname)

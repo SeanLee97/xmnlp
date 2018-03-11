@@ -30,12 +30,16 @@ import sys
 if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
+    range = xrange
+    import cPickle as pickle
+else:
+    import pickle
 
 from ..pinyin import translate
 
 import os
 import gzip
-import pickle
+
 from math import log
 from collections import defaultdict
 

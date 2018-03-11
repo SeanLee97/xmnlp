@@ -29,8 +29,11 @@ import sys
 if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
+    range = xrange
+    import cPickle as pickle
+else:
+    import pickle
 
-import pickle
 import gzip
 
 from math import log, exp
