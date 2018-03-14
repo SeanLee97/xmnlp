@@ -76,9 +76,11 @@ def tag_loader():
             raise ValueError('tagger load failed!', e)
     
 def set_userdict(fpath):
-    dag_loader()
+    # 依赖于segger
+    seg_loader()
 
     global userdict
+    global postagger
     if userdict == None:
         postagger.userdict(fpath)
     
