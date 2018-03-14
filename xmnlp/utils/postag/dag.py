@@ -227,18 +227,18 @@ class DAG(object):
                 r[N] = (1, 0)
             for idx in range(N - 1, -1, -1):
                 if r != None:
-                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x+1]) or 1) / log_total + route[x+1][0]) * r[x+1][0], x) for x in dag[idx])
+                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log_total + route[x+1][0]) + r[x+1][0], x) for x in dag[idx])
                 else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) / log_total + route[x+1][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log_total + route[x+1][0], x) for x in dag[idx])
         else:
             for idx in range(N):
-                route[idx] = (log(self.dict['counter'].get(sent[idx]) or 1) / log_total, 0)
+                route[idx] = (log(self.dict['counter'].get(sent[idx]) or 1) - log_total, 0)
 
             for idx in range(N):
                 if r != None:
-                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x-1]) or 1) / log_total + route[x][0]) * r[x][0], x) for x in dag[idx])
+                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log_total + route[x][0]) + r[x][0], x) for x in dag[idx])
                 else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) / log_total + route[x][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log_total + route[x][0], x) for x in dag[idx])
         return route
 
     def tag(self, sent):
