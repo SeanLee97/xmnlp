@@ -70,10 +70,10 @@ class Pinyin(object):
     def train(self, fpath):
         def get_file(path):
             if os.path.isdir(path):
-                 for root, dirs, files in os.walk(path):
-                     if len(dirs) == 0:
-                         for f in files:
-                             yield os.sep.join([root, f])
+                for root, dirs, files in os.walk(path):
+                    if len(dirs) == 0:
+                        for f in files:
+                            yield os.sep.join([root, f])
             else:
                 yield path
 
