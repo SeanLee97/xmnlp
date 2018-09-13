@@ -130,7 +130,7 @@ class Checker(object):
         for words in datas:
             for word in words:
                 if word not in self.words:
-                    self.words[word] += 1
+                    self.words[word] = 1
                 else:
                     self.words[word] += 1
 

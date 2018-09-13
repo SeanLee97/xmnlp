@@ -33,6 +33,7 @@ if sys.version_info[0] == 2:
     sys.setdefaultencoding('utf8')
     range = xrange
 
+import re
 from ..utils.postag import DAG
 from ..config import regx as R
 
@@ -71,25 +72,18 @@ class Postag(object):
     def set_hmm(self, hmm=True):
         self.dag.set_hmm(hmm)
 
-    def re_decode(self, x, arr, tag=None):
-        for d in arr:
-            x = x.replace(d, ' ')
-        
-        if len(x.strip()) == 0:
-            if tag != None:
-                yield arr[0], tag
+    def re_decode(self, parts, arr, tag=False):
+        if len(parts[0]) >0:
+            for x in parts[0]:
+                yield x, 'un'
+        for x, y in zip(parts[1:], arr):
+            if y.isalpha():
+                yield y, 'eng'
             else:
-                yield arr[0]
-        else:
-            for idx, xx in enumerate(x.split()):
-                if tag != None:
-                    yield xx, 'un'
-                    if idx < len(arr):
-                        yield arr[idx], tag
-                else:
-                    yield xx
-                    if idx in arr:
-                        yield arr[idx]
+                yield y, 'm'
+            for xx in x:
+                yield xx, 'un'
+     
 
     def seg(self, sent):
         for s in R.zh.split(sent):
@@ -105,14 +99,11 @@ class Postag(object):
                     if R.skip.match(x):
                         yield x
                     else:
-                        digts = R.digt.findall(x)
-                        engs = R.eng.findall(x)
                         x = x.replace(' ','')
-                        if len(digts) > 0:
-                            for w, t in self.re_decode(x, digts, 'm'):
-                                yield w
-                        elif len(engs) > 0:
-                            for w, t in self.re_decode(x, engs, 'eng'):
+                        endigts = R.endigt.findall(x)
+                        parts = re.split(r'[0-9]+\.?[0-9]+|[0-9]+|[a-zA-Z]+', x)
+                        if len(endigts) > 0:
+                            for w, t in self.re_decode(parts, endigts, False):
                                 yield w
                         else:
                             for xx in x:
@@ -120,28 +111,24 @@ class Postag(object):
     def tag(self, sent):
         for s in R.zh.split(sent):
             s = s.strip()
-            s = R.skip.sub("", s)
+            s = R.skip.sub('', s)
 
             if not s:
                 continue
             if R.zh.match(s):
                 for w,t in self.dag.tag(s):
                     yield w, t
-
             else:
                 tmp = R.skip.split(s)
                 for x in tmp:
                     if R.skip.match(x):
                         yield x
                     else:
-                        digts = R.digt.findall(x)
-                        engs = R.eng.findall(x)
-                        x = x.replace(' ','')
-                        if len(digts) > 0:
-                            for w, t in self.re_decode(x, digts, 'm'):
-                                yield w, t
-                        elif len(engs) > 0:
-                            for w, t in self.re_decode(x, engs, 'eng'):
+                        x = x.replace(' ', '')
+                        endigts = R.endigt.findall(x)
+                        parts = re.split(r'[0-9]+\.?[0-9]+|[0-9]+|[a-zA-Z]+', x)
+                        if len(endigts) > 0:
+                            for w, t in self.re_decode(parts, endigts, True):
                                 yield w, t
                         else:
                             for xx in x:

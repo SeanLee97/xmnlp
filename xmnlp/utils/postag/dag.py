@@ -36,6 +36,7 @@ if sys.version_info[0] == 2:
 else:
     import pickle
 
+import io
 import os
 import gzip 
  
@@ -133,15 +134,15 @@ class DAG(object):
         freq = max(int(freq * total), self.default_dict['counter'].get(word, 1))
         return freq
 
-    def userdict(self, fpath):
-        counter, total, word_tag = self.load_dict(fpath)
+    def userdict(self, fpath, authfreq=False, defaultfreq=5):
+        counter, total, word_tag = self.load_dict(fpath, authfreq=authfreq, defaultfreq=defaultfreq)
         self.dict = {
             'counter': dict(self.dict['counter'], **counter),
             'total': self.default_dict['total'] + total,
             'word_tag': dict(self.dict['word_tag'], **word_tag)
         }
 
-    def load_dict(self, fpath):
+    def load_dict(self, fpath, authfreq=False, defaultfreq=5):
         def get_file(path):
             if os.path.isdir(path):
                 for root, dirs, files in os.walk(path):
@@ -156,11 +157,11 @@ class DAG(object):
         word_tag = {}
         
         for fname in get_file(fpath):
-            with open(fname, 'r') as f:
+            with io.open(fname, 'r', encoding='utf-8') as f:
                 for idx, line in enumerate(f, 1):
                     try:
                         line = line.strip()
-                        if not line:
+                        if len(line) == 0:
                             continue
                         if sys.version_info[0] == 2:
                             line = line.decode('utf-8')
@@ -174,12 +175,18 @@ class DAG(object):
                                 freq = x
                                 tag = 'un'
                             else:
-                                freq = self.get_freq(word)
+                                if authfreq:
+                                    freq = self.get_freq(word)
+                                else:
+                                    freq = defaultfreq
                                 tag = x
 
                         elif len(arr) == 1:
                             word = arr[0]
-                            freq = self.get_freq(word)
+                            if authfreq:
+                                freq = self.get_freq(word)
+                            else:
+                                freq = defaultfreq
                             tag = 'un'
                         else:
                             continue
@@ -189,7 +196,6 @@ class DAG(object):
                         total += freq
                         word_tag[word] = tag
 
-                        # trie
                         for ch in range(len(word)):
                             wfrag = word[:ch + 1]
                             if wfrag not in counter:
@@ -219,7 +225,6 @@ class DAG(object):
     def get_route(self, sent, dag, r=None, reverse=True):
         route = {}
         N = len(sent)
-        log_total = log(self.dict['total'])
 
         if reverse:
             route[N] = (1, 0)
@@ -227,18 +232,18 @@ class DAG(object):
                 r[N] = (1, 0)
             for idx in range(N - 1, -1, -1):
                 if r != None:
-                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log_total + route[x+1][0]) + r[x+1][0], x) for x in dag[idx])
+                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log(self.dict['total']) + route[x+1][0]) + r[x+1][0], x) for x in dag[idx])
                 else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log_total + route[x+1][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log(self.dict['total']) + route[x+1][0], x) for x in dag[idx])
         else:
             for idx in range(N):
-                route[idx] = (log(self.dict['counter'].get(sent[idx]) or 1) - log_total, 0)
+                route[idx] = (log(self.dict['counter'].get(sent[idx]) or 1) - log(self.dict['total']), 0)
 
             for idx in range(N):
                 if r != None:
-                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log_total + route[x][0]) + r[x][0], x) for x in dag[idx])
+                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log(self.dict['total']) + route[x][0]) + r[x][0], x) for x in dag[idx])
                 else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log_total + route[x][0], x) for x in dag[idx])
+                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log(self.dict['total']) + route[x][0], x) for x in dag[idx])
         return route
 
     def tag(self, sent):
@@ -253,50 +258,52 @@ class DAG(object):
 
     def decode(self, sent):
         dag = self.get_dag(sent)
-        r = self.get_route(sent, dag, reverse=False)
-        route = self.get_route(sent, dag, r=r, reverse=True)
+        #route = self.get_route(sent, dag, reverse=False)
+        #route = self.get_route(sent, dag, r=route, reverse=True)
+        route = self.get_route(sent, dag, reverse=True)
 
         x = 0
-        buf = ''
+        buffer = ''
         N = len(sent)
         while x < N:
             y = route[x][1] + 1
             l_word = sent[x:y]
             if y - x == 1:
-                buf += l_word
+                buffer += l_word
             else:
-                if buf:
-                    if len(buf) == 1:
-                        yield buf
-                        buf = ''
+                if buffer:
+                    if len(buffer) == 1:
+                        yield buffer
+                        buffer = ''
                     else:
-                        if not self.dict['counter'].get(buf):
+                        if not self.dict['counter'].get(buffer):
                             if self.hmm:
-                                for elem in self.hmm_seg(buf):
-                                    yield elem
+                                for item in self.hmm_seg(buffer):
+                                    yield item
                             else:
-                                for elem in buf:
-                                    yield elem
+                                for item in buffer:
+                                    yield item
                         else:
-                            for elem in buf:
-                                yield elem
-                        buf = ''
+                            for item in buffer:
+                                yield item
+                        buffer = ''
                 yield l_word
             x = y
-        if buf:
-            if len(buf) == 1:
-                yield buf
+
+        if buffer:
+            if len(buffer) == 1:
+                yield buffer
             else:
-                if not self.dict['counter'].get(buf):
+                if not self.dict['counter'].get(buffer):
                     if self.hmm:
-                        for elem in self.hmm_seg(buf):
-                            yield elem
+                        for item in self.hmm_seg(buffer):
+                            yield item
                     else:
-                        for elem in buf:
-                            yield elem
+                        for item in buffer:
+                            yield item
                 else:
-                    for elem in buf:
-                        yield elem
+                    for item in buffer:
+                        yield item
 
     def hmm_seg(self, sent):
         ret = self.hmm_segger.tag(sent)
