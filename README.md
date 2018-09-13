@@ -199,16 +199,5 @@ print(xmnlp.radical('自然语言处理'))
 * [jieba](https://github.com/fxsjy/jieba)
 * [snownlp](https://github.com/isnowfy/snownlp)
 
-## 更新说明
-### version 0.1.8 (2018.09.14) 
-
-* 将默认的压缩方式由`gzip`转为了`bz2`
-* 新增汉字部首功能
-* 优化代码结果，使用`Module`进行模块的同一管理
-* 重写了`checker`的实现方式，新版本更关注词的拼写检查
-* 修复了分词/词性标注若干bug
-* 兼容windows
-* 去除类调用方式
-
 ## License
 [MIT](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)
