@@ -181,7 +181,7 @@ print(xmnlp.radical('自然语言处理'))
 支持用户使用自己的语料训练模型，训练例子在[examples](https://github.com/SeanLee97/xmnlp/tree/master/examples) 的trainer_\*中
 
 ### 训练语料
-[语料百度网盘](https://pan.baidu.com/s/1UtkaKfNn-R47569VAIeL-A)
+[语料百度网盘](https://pan.baidu.com/s/1947bj7WGfz75vZxP22nUZA)
 
 ### 更多
 **本项目采用所有模型只有在第一次使用时才会开始加载，所以第一次加载速度会有些慢**
