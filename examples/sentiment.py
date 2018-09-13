@@ -34,34 +34,11 @@ if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
 
-descr = """
-    情感计算
-/ naive bayes / 
-"""
-print(descr)
-
-
-doc = """这件衣服的质量也太差了吧！一穿就烂！"""
-doc2 = """天气太好了，我们去钓鱼吧"""
-
-print('\n++++++++++++++++++++++++ usage 1 ++++++++++++++++++++++++\n')
-
-"""
- 1. 使用类来进行操作
-
-"""
-from xmnlp import XmNLP 
-
-xm = XmNLP(doc, stopword=True)
-print('Text: ', doc)
-print('Score: ', xm.sentiment())
-print('Text: ', doc2)
-print('Score: ', xm.sentiment(doc2))
-
-
-print('\n++++++++++++++++++++++++ usage 2 ++++++++++++++++++++++++\n')
-
 import xmnlp
+xmnlp.set_stopword('./stopword.txt')
+
+doc = """这件衣服的质量也太差了吧！"""
+doc2 = """这酒店真心不错"""
 print('Text: ', doc)
 print('Score: ', xmnlp.sentiment(doc))
 print('Text: ', doc2)

@@ -32,25 +32,24 @@ if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
     range = xrange
-    import cPickle as pickle
-else:
-    import pickle
 
-import gzip
+import io
 import os
-from math import log
 
+from math import log
 from collections import defaultdict
+from xmnlp.module import Module
+from xmnlp.utils import safe_input
 
 BOS = '<BOS>'
 EOS = '<EOS>'
 UNK = '<UNK>'
 
-"""bigram / trigram hmm, viterbi decode"""
+class HMM(Module):
+    __notsave__ = []
+    __onlysave__ = []
 
-class HMM(object):
     def __init__(self, N=2, bems=True, *args):
-
         self.N = 2
         if N == 3:
             self.N == N 
@@ -75,84 +74,19 @@ class HMM(object):
 
         self._start_prob = {}
 
-    def save(self, fname, iszip=True):
-        d = {}
-        for k, v in self.__dict__.items():
-            if isinstance(v, set):
-                d[k] = list(v)
-            elif hasattr(v, '__dict__'):
-                d[k] = v.__dict__
-            else:
-                d[k] = v
-
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
-        if not iszip:
-            pickle.dump(d, open(fname, 'wb'), True)
-        else:
-            f = gzip.open(fname, 'wb')
-            f.write(pickle.dumps(d))
-            f.close()
-
-    def load(self, fname, iszip=True):
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
-
-        if not iszip:
-            d = pickle.load(open(fname, 'rb'))
-        else:
-            try:
-                f = gzip.open(fname, 'rb')
-                d = pickle.loads(f.read())
-            except IOError:
-                f = open(fname, 'rb')
-                d = pickle.loads(f.read())
-            f.close()
-
-        for k, v in d.items():
-            if 'bems' == k:
-                continue
-
-            if isinstance(self.__dict__[k], set):
-                self.__dict__[k] = set(v)
-            elif hasattr(self.__dict__[k], '__dict__'):
-                self.__dict__[k].__dict__ = v
-            else:
-                self.__dict__[k] = v
-
     def load_data(self, fpath):
-        def get_file(path):
-            if os.path.isdir(path):
-                 for root, dirs, files in os.walk(path):
-                     if len(dirs) == 0:
-                         for f in files:
-                             yield os.sep.join([root, f])
-            else:
-                yield path
-
         datas = []
-        for fname in get_file(fpath):
-            with open(fname, 'r') as f:
+        for fname in self.filelist(fpath):
+            with io.open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
-                    line = line.strip()
+                    line = safe_input(line)
                     if len(line) == 0:
                         continue
                     self.line_total += 1
-                    datas.append(map(lambda x: x.split('/'), line.split()))
-
+                    datas.append(list(map(lambda x: x.split('/'), line.split())))
         return datas
 
     def train(self, fname):
-
-        '''
-        def _filter(freq):
-            new = defaultdict(int)
-            for (word,tag) in self.emit:
-                new[(word,tag)] = self.emit[(word,tag)]
-                if self.emit[(word,tag)] < freq:
-                    new[(UNK,tag)] += self.emit[(word,tag)]
-            self.emit = new
-        '''
 
         datas = self.load_data(fname)            
 
@@ -164,7 +98,6 @@ class HMM(object):
 
             for word, tag in data:
                 curr.append(tag)
-
                 self.state.add(tag)
                 self.emit[(word, tag)] += 1
                 self.uni[tag] += 1

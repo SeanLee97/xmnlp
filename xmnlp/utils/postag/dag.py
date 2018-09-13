@@ -32,78 +32,34 @@ if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
     range = xrange 
-    import cPickle as pickle
-else:
-    import pickle
 
 import io
 import os
-import gzip 
- 
+
+from xmnlp.module import Module
+from xmnlp.utils import safe_input
 
 from math import log
 from .hmm import HMM
 
-class DAG(object):
+class DAG(Module):
+    __notsave__ = []
+    __onlysave__ = ['dict']
 
     def __init__(self, *args):
         self.hmm = True
-
-        self.default_dict = {}
+        self.dict = {}
 
     def set_hmm(self, hmm=True):
         self.hmm = hmm
 
     def train(self, fname):
         counter, total, word_tag = self.load_dict(fname)
-        self.default_dict = {
+        self.dict = {
             'counter': counter,
             'total': total,
             'word_tag': word_tag
         }
-
-    def save(self, fname, iszip=True):
-        d = {}
-        for k, v in self.__dict__.items():
-            if isinstance(v, set):
-                d[k] = list(v)
-            elif hasattr(v, '__dict__'):
-                d[k] = v.__dict__
-            else:
-                d[k] = v
-
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
-        if not iszip:
-            pickle.dump(d, open(fname, 'wb'), True)
-        else:
-            f = gzip.open(fname, 'wb')
-            f.write(pickle.dumps(d))
-            f.close()
-    
-    def load(self, fname, iszip=True):
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
-        if not iszip:
-            d = pickle.load(open(fname, 'rb'))
-        else:
-            try:
-                f = gzip.open(fname, 'rb')
-                d = pickle.loads(f.read())
-            except IOError:
-                f = open(fname, 'rb')
-                d = pickle.loads(f.read())
-            f.close()
-
-        for k, v in d.items():
-            if isinstance(self.__dict__[k], set):
-                self.__dict__[k] = set(v)
-            elif hasattr(self.__dict__[k], '__dict__'):
-                self.__dict__[k].__dict__ = v
-            else:
-                self.__dict__[k] = v
-
-        self.dict = self.default_dict
 
     def load_hmm(self, segfname=None, tagfname=None):
         if segfname == None and tagfname == None:
@@ -127,44 +83,32 @@ class DAG(object):
                 self.hmm = False
 
     def get_freq(self, word):
-        total = float(self.default_dict['total'])
+        total = float(self.dict['total'])
         freq = 1
         for w in self.seg(word):
-            freq *= self.default_dict['counter'].get(w, 1) / total
-        freq = max(int(freq * total), self.default_dict['counter'].get(word, 1))
+            freq *= self.dict['counter'].get(w, 1) / total
+        freq = max(int(freq * total), self.dict['counter'].get(word, 1))
         return freq
 
     def userdict(self, fpath, authfreq=False, defaultfreq=5):
         counter, total, word_tag = self.load_dict(fpath, authfreq=authfreq, defaultfreq=defaultfreq)
         self.dict = {
             'counter': dict(self.dict['counter'], **counter),
-            'total': self.default_dict['total'] + total,
+            'total': self.dict['total'] + total,
             'word_tag': dict(self.dict['word_tag'], **word_tag)
         }
 
     def load_dict(self, fpath, authfreq=False, defaultfreq=5):
-        def get_file(path):
-            if os.path.isdir(path):
-                for root, dirs, files in os.walk(path):
-                    if len(dirs) == 0:
-                        for f in files:
-                            yield os.sep.join([root, f])
-            else:
-                yield path
 
         counter = {}
         total = 0
         word_tag = {}
         
-        for fname in get_file(fpath):
+        for fname in self.filelist(fpath):
             with io.open(fname, 'r', encoding='utf-8') as f:
                 for idx, line in enumerate(f, 1):
                     try:
-                        line = line.strip()
-                        if len(line) == 0:
-                            continue
-                        if sys.version_info[0] == 2:
-                            line = line.decode('utf-8')
+                        line = safe_input(line)
 
                         arr = line.split()
                         if len(arr) >= 3:

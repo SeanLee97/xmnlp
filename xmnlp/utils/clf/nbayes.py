@@ -41,7 +41,6 @@ from math import log, exp
 from collections import defaultdict
 
 class NBayes(object):
-
     def __init__(self):
         self.corpus = {}
         self.counter = {}

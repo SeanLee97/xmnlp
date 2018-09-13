@@ -26,7 +26,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
-
 import sys
 if sys.version_info[0] == 2:
     reload(sys)
@@ -36,228 +35,207 @@ if sys.version_info[0] == 2:
 else:
     import pickle
 
-from ..pinyin import translate
-
+import io
 import os
-import gzip
 
-from math import log
-from collections import defaultdict
-
-BOS = u'<BOS>'
-EOS = u'<EOS>'
+from ..utils import safe_input, filelist
+from ..config import path as C_PATH
 
 class Checker(object):
 
-    def __init__(self):
+    """
+    Args:
+        max_edit_distance: 
+        verbose: 
+            - 0  return best guession
+            - 1  all guessions of smallest edit distance 
+            - 2  all guessions <= max_edit_distance
+    """
+    def __init__(self, max_edit_distance=2, verbose=0):
+        self.max_edit_distance = max_edit_distance
+        self.verbose = verbose
+        self.dict = {}
+        self.longest_length = 0
 
-        # n-gram counter
-        self.uni = defaultdict(int)
-        self.bi = defaultdict(int)
+        self.train(C_PATH.checker['corpus']['checker'])
 
-        self.pinyins = {}
-        self.chs = set()
-        self.words = defaultdict(int)
-
-        self.threhold = 1*1e-7
+    def userdict(self, fpath):
+        print("loading...")
+        self.train(fpath)
 
     def load_data(self, fpath):
-        def get_file(path):
-            if os.path.isdir(path):
-                 for root, dirs, files in os.walk(path):
-                     if len(dirs) == 0:
-                         for f in files:
-                             yield os.sep.join([root, f])
-            else:
-                yield path
-
         datas = []
-        for fname in get_file(fpath):
-            with open(fname, 'r') as f:
+        for fname in filelist(fpath):
+            with io.open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
                     line = line.strip()
-                    if sys.version_info[0] == 2:
-                        line = line.decode('utf-8')
-
-                    if len(line) == 0:
-                        continue
-                    datas.append(line.split())
-
-        return datas
-
-    def save(self, fname, iszip=True):
-        d = {}
-        for k, v in self.__dict__.items():
-            if isinstance(v, set):
-                d[k] = list(v)
-            elif hasattr(v, '__dict__'):
-                d[k] = v.__dict__
-            else:
-                d[k] = v
-
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
-        if not iszip:
-            pickle.dump(d, open(fname, 'wb'), True)
-        else:
-            f = gzip.open(fname, 'wb')
-            f.write(pickle.dumps(d))
-            f.close()
-
-    def load(self, fname, iszip=True):            
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
-        if not iszip:
-            d = pickle.load(open(fname, 'rb'))
-        else:
-            try:
-                f = gzip.open(fname, 'rb')
-                d = pickle.loads(f.read())
-            except IOError:
-                f = open(fname, 'rb')
-                d = pickle.loads(f.read())
-            f.close()
-        for k, v in d.items():
-            if isinstance(self.__dict__[k], set):
-                self.__dict__[k] = set(v)
-            elif hasattr(self.__dict__[k], '__dict__'):
-                self.__dict__[k].__dict__ = v
-            else:
-                self.__dict__[k] = v
+                    arr = line.split()
+                    if len(arr) > 0:
+                        yield safe_input(arr[0])
 
     def train(self, fname):
-        datas = self.load_data(fname)
-        for words in datas:
-            for word in words:
-                if word not in self.words:
-                    self.words[word] = 1
-                else:
-                    self.words[word] += 1
-
-            data = ''.join(words)
-            # init curr
-            curr = [BOS]
-            self.uni[BOS] += 1
-
-            for word in data:
-                curr.append(word)
-                self.uni[word] += 1
-                self.bi[tuple(curr)] += 1
-
-                curr.pop(0)
-
-        for c in self.uni.keys():
-            if c == BOS:
-                continue
-            self.chs.add(c)
-            py = ''.join(translate(c))
-            if py not in self.pinyins:
-                self.pinyins[py] = [c]
-            else:
-                self.pinyins[py].append(c)
-
-    def calc_proba(self, gram):
-        x = self.bi[tuple(gram)]
-        y = self.uni[gram[0]]
-        return float((x + 1)) / (y + len(self.uni.keys())**2)
-
-    def get_ngram(self, sent):
-        ngram = []
-
-        curr = [BOS]
-        for word in sent:
-            curr.append(word)
-            ngram.append( tuple(curr) )
-            curr.pop(0)
-
-        return ngram        
-
-    def levenshtein(self, phrase):
-        splits     = [(phrase[:i], phrase[i:])  for i in range(len(phrase) + 1)]
-        deletes    = [L + R[1:]                 for L, R in splits if R]
-        transposes = [L + R[1] + R[0] + R[2:]   for L, R in splits if len(R)>1]
-        replaces   = [L + c + R[1:]             for L, R in splits if R for c in self.chs]
-        inserts    = [L + c + R                 for L, R in splits for c in self.chs]
+        print("start to build dictionary...")
         
-        return set(deletes + transposes + replaces + inserts)
+        for word in self.load_data(fname):
+            if word in self.dict:
+                self.dict[word] = (self.dict[word][0], self.dict[word][1] + 1)
+            else:
+                self.dict[word] = ([], 1)
+                self.longest_length = max(self.longest_length, len(word))
 
+            if self.dict[word][1] == 1:
+                # first show of word in corpus
+                deletes = self.get_deletes(word)
+                for d in deletes:
+                    if d in self.dict:
+                        self.dict[d][0].append(word)
+                    else:
+                        self.dict[d] = ([word], 0)
+        print("done !")
 
-    def ngram_proba(self, words):
-        #score = 1.0
-        probs = []
-        ngram = self.get_ngram(words)
-        for g in ngram:
-            p = self.calc_proba(g)
-            #score *= p
-            probs.append((g, p))
-        return probs
+    def get_deletes(self, word):
+        dels = []
+        queue = [word]
+        for d in range(self.max_edit_distance):
+            tmp = []
+            for word in queue:
+                if len(word) > 1:
+                    for i in range(len(word)):
+                        except_char = word[:i] + word[i+1:]
+                        if except_char not in dels:
+                            dels.append(except_char)
+                        if except_char not in tmp:
+                            tmp.append(except_char)
+            queue = tmp
+        return dels
 
-    def correct(self, words, window=4):
-        if len(words) < 1:
-            return ''.join(words)
+    def edit_distance(self, seq1, seq2):
+        """implement of dameraulevenshtein"""
+        m = len(seq1)
+        n = len(seq2)
+        prev = None 
+        cnt = list(range(1, n + 1)) + [0]
+        for i in range(m):
+            pprev, prev, cnt = prev, cnt, [0]*n + [i+1]
+            for j in range(n):
+                cnt[j] = min(prev[j] + 1, cnt[j-1]+1, prev[j-1]+(seq1[i]!=seq2[j]))
+                if (i > 0 and j > 0 and seq1[i] == seq2[j-1] and seq1[i-1] == seq2[j]
+                    and seq1[i] != seq2[j]):
+                    cnt[j] = min(cnt[j], pprev[j-2]+1)
+        return cnt[n-1]
 
-        res = ''
-        pos = 0
-        probs = {}
-        while pos < len(words):
-            sent = ''.join(words[pos: pos + window])
-            if len(sent) == 1:
-                res += sent
-                pos += window
+    def best_match(self, word):
+        try:
+            return self.word_checker(word)[0]
+        except:
+            return None 
+
+    def word_checker(self, word):
+        if (len(word) - self.longest_length) > self.max_edit_distance or len(word.strip()) == 0:
+            return None
+
+        min_guess_len = float('inf')
+        queue = [word]
+        guess_dict = {}
+        tmp_dict = {}
+
+        while len(queue) > 0:
+            # queue pop
+            cnt = queue[0]
+            queue = queue[1:]
+
+            if ((self.verbose < 2) and (len(guess_dict) > 0) and 
+                ((len(word) - len(cnt)) > min_guess_len)):
+                break
+
+            if (cnt in self.dict) and (cnt not in guess_dict):
+                if (self.dict[cnt][1] > 0):
+                    guess_dict[cnt] = (self.dict[cnt][1], 
+                                            len(word) - len(cnt))
+                    if ((self.verbose < 2) and (len(word)==len(cnt))):
+                        break
+
+                    elif (len(word) - len(cnt)) < min_guess_len:
+                        min_guess_len = len(word) - len(cnt)
+
+                for sc_item in self.dict[cnt][0]:
+                    if (sc_item not in guess_dict):
+                        
+                        if len(cnt) == len(word):
+                            item_dist = len(sc_item) - len(cnt)
+
+                        item_dist = self.edit_distance(sc_item, word)
+                        
+                        if ((self.verbose < 2) and (item_dist > min_guess_len)):
+                            pass
+
+                        elif item_dist <= self.max_edit_distance:
+                            guess_dict[sc_item] = (self.dict[sc_item][1], item_dist)
+                            if item_dist < min_guess_len:
+                                min_guess_len = item_dist
+
+                        if self.verbose < 2:
+                            guess_dict = {k:v for k, v in guess_dict.items() if v[1] <= min_guess_len}
+                    
+            if ((self.verbose < 2) and ((len(word)-len(cnt)) > min_guess_len)):
+                pass
+
+            elif (len(word)-len(cnt)) < self.max_edit_distance and len(cnt)>1:
+                for i in range(len(cnt)): # character index        
+                    except_char = cnt[:i] + cnt[i+1:]
+                    if except_char not in tmp_dict:
+                        queue.append(except_char)
+                        tmp_dict[except_char] = None 
+
+        guess_list = guess_dict.items()
+        ret = sorted(guess_list, key=lambda x: (x[1][0], -x[1][1]))
+        
+        if self.verbose==0:
+            try:
+                return ret[0]
+            except:
+                return None
+        else:
+            return ret
+
+    def doc_checker(self, doc):
+        if len(doc) < 2:
+            return [doc]
+
+        cands = []
+        cnt = doc[0]
+        appear_times = 0
+        for ch in doc[1:]:
+            cnt += ch
+            suggestion = self.best_match(cnt)
+
+            if len(cands) > 0 and suggestion == cands[-1]:
+                appear_times += 1
+            else:
+                appear_times = 0
+
+            if appear_times > 1:
+                cnt = ch
+                appear_times = 0
                 continue
 
-            probs = self.ngram_proba(sent)
-            wrongs = []
-            idx = 0
-            while idx < len(probs):
-                if idx+1 == len(probs):
-                    break
-                if probs[idx][0][0] not in [BOS, EOS] and probs[idx+1][0][0] not in [BOS, EOS] \
-                and probs[idx][1] < self.threhold and probs[idx+1][1] < self.threhold:
-                    wrongs.append((probs[idx][0], probs[idx+1][0]))
-                
-                idx += 1
+            if suggestion != None:
+                cands.append(suggestion)
+            else:
+                cands.append(ch)
 
-            correct = {}
-            for pair in wrongs:
-                first = pair[0]
-                second = pair[1]
-                if first[1] == second[0]:
-                    candidates = []
-                    wrong = first[1]
-                    wrong_py = ''.join(translate(wrong))
-                    if wrong_py not in self.pinyins:
-                        continue
+            if len(cnt) > self.longest_length:
+                cnt = ch
 
-                    fch  = correct[first[0]]  if first[0] in correct.keys() else first[0]
-                    for ch in self.pinyins[wrong_py]:
-                        p = self.calc_proba((fch, ch)) + self.calc_proba((ch, second[1]))
-                        candidates.append((ch, p))
-                    candidates = sorted(candidates, key=lambda x: x[1], reverse=True)
-                    correct[wrong] = candidates[0][0]
-
-            for w in sent:
-                res += correct.get(w, w)
-
-            pos += window
-
-        # process head and tail
-        ps = []
-        if probs[1][1] < self.threhold:
-            ps.append((''.join(probs[1][0]), probs[1]))
-        if probs[-1][1] < self.threhold:
-            ps.append((''.join(probs[-1][0]), probs[-1]))
-        for word, prob in ps:
-            if prob[1] < self.threhold:
-                py = ''.join(translate(word))
-                edits = list(filter(lambda x: len(x) == len(word) and ''.join(translate(x)) == py, self.levenshtein(word)))
-                if len(edits) > 0:
-                    candidates = []
-                    for ch in edits:
-                        if ch in self.words:
-                            p = self.calc_proba((ch[0], ch[1]))
-                            candidates.append((ch, p))
-                        candidates = sorted(candidates, key=lambda x: x[1], reverse=True)
-                    if len(candidates) > 0 and candidates[0][1] > prob[1]:
-                        res = res.replace(word, candidates[0][0])
-        return res
+        cands = list(dict.fromkeys(cands))
+        n = len(cands)
+        i = 1
+        while i < n:
+            if cands[i-1] in cands[i]:
+                cands.remove(cands[i-1])
+                n = len(cands)
+                i -= 2
+            i += 1    
+            if len(cands) == 1:
+                break
+        return cands

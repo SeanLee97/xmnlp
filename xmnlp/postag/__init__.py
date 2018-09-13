@@ -36,7 +36,6 @@ from . import postag
 postagger = None
 segger = None
 tagger = None
-userdict = None
 
 def dag_loader():
     global postagger
@@ -79,10 +78,8 @@ def set_userdict(fpath):
     # 依赖于segger
     seg_loader()
 
-    global userdict
     global postagger
-    if userdict == None:
-        postagger.userdict(fpath)
+    postagger.userdict(fpath)
     
 def seg(doc, hmm=True):
     seg_loader()

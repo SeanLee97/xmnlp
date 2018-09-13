@@ -31,21 +31,60 @@ if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
 
+import io
 import os
 
-from ..utils.clf import NBayes
+from ..module import Module
+from ..utils import safe_input
 from ..postag import seg
 
-class Sentiment(object):
+from math import log, exp
+from collections import defaultdict
+
+class NBayes(Module):
+    __notsave__ = []
+    __onlysave__ = ['counter', 'corpus', 'total']
 
     def __init__(self):
-        self.clf = NBayes()
+        self.corpus = {}
+        self.counter = {}
+        self.total = 0
 
-    def save(self, fname):
-        self.clf.save(fname)
+    def process_data(self, data):
+        for d in data:
+            label = d[0]
+            doc = d[1]
+            if label not in self.corpus:
+                self.corpus[label] = defaultdict(int)
+                self.counter[label] = 0
+            for word in doc:
+                self.counter[label] += 1
+                self.corpus[label][word] += 1
+        self.total = sum(self.counter.values())
 
-    def load(self, fname):
-        self.clf.load(fname)
+    def calc_score(self, sent):
+        tmp = {}
+        
+        for k in self.corpus:
+            tmp[k] = log(self.counter[k]) - log(self.total)
+            for word in sent:
+                x = float(self.corpus[k].get(word, 1)) / self.counter[k]
+                tmp[k] += log(x)
+
+        ret, prob = 0, 0
+        for k in self.corpus:
+            curr = 0
+            try:
+                for kk in self.corpus:
+                    curr += exp(tmp[kk] - tmp[k])
+                curr = 1.0 / curr
+            except OverflowError:
+                curr = 0.0
+            if curr > prob:
+                ret, prob = k, curr
+        return (ret, prob)
+
+class Sentiment(NBayes):
 
     def filter_stopword(self, words, stopword=[]):
         if len(stopword) == 0:
@@ -68,20 +107,17 @@ class Sentiment(object):
 
         pos_docs = []
         neg_docs = []
+
         for fname in get_file(posfname):
-            with open(fname, 'r') as f:
+            with io.open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
-                    line = line.strip()
-                    if sys.version_info[0] == 2:
-                        line = line.decode('utf-8')
+                    line = safe_input(line)
                     pos_docs.append(seg(line))
 
         for fname in get_file(negfname):
-            with open(fname, 'r') as f:
+            with io.open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
-                    line = line.strip()
-                    if sys.version_info[0] == 2:
-                        line = line.decode('utf-8')
+                    line = safe_input(line)
                     neg_docs.append(seg(line))
 
         return pos_docs, neg_docs
@@ -95,11 +131,11 @@ class Sentiment(object):
         for sent in pos_docs:
             data.append(('pos', self.filter_stopword(sent, stopword=stopword)))
 
-        self.clf.train(data)
+        self.process_data(data)
 
     def predict(self, doc, stopword=[]):
         sent = seg(doc)
-        ret, prob = self.clf.predict(self.filter_stopword(sent, stopword=stopword))
+        ret, prob = self.calc_score(self.filter_stopword(sent, stopword=stopword))
         if ret == 'pos':
             return prob
         return 1 - prob

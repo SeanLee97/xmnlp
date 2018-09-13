@@ -50,7 +50,7 @@ def read(fname):
 
 setup(
     name='xmnlp',
-    version='0.1.7',
+    version='0.1.8',
     description='A Lightweight Chinese Natural Language Processing Toolkit',
     author='SeanLee97',
     url='https://github.com/SeanLee97/xmnlp',

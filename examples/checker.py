@@ -33,29 +33,10 @@ if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
 
-descr = """
-      文本纠错
-/ n-gam + levenshtein / 
-"""
-print(descr)
-
-
-doc = """这理风景绣丽，而且天汽不错，我的心情各外舒畅!"""
-
-print('\n++++++++++++++++++++++++ usage 1 ++++++++++++++++++++++++\n')
-
-"""
- 1. 使用类来进行操作
-
-"""
-from xmnlp import XmNLP 
-xm = XmNLP(doc)
-print('Error: \n', doc)
-print('Correct: \n', xm.checker())
-
-
-print('\n++++++++++++++++++++++++ usage 2 ++++++++++++++++++++++++\n')
-
 import xmnlp
+xmnlp.set_userdict('./userdict.txt')
+
+doc = """今天天汽不错哦"""
+
 print('Error: \n', doc)
-print('Correct: \n', xmnlp.checker(doc))
+print('Correct: \n', xmnlp.checker(doc, level=1))

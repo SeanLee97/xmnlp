@@ -40,13 +40,16 @@ _postag_ = os.path.join(_root_, 'postag')
 _checker_ = os.path.join(_root_, 'checker')
 _sentiment_ = os.path.join(_root_, 'sentiment')
 _pinyin_ = os.path.join(_root_, 'pinyin')
+_radical_ = os.path.join(_root_, 'radical')
 
 root_f = lambda x: os.path.join(_root_, x)
 corpus_f = lambda x: os.path.join(_corpus_, x)
+
 postag_f = lambda x: os.path.join(_postag_, x)
 checker_f = lambda x: os.path.join(_checker_, x)
 sentiment_f = lambda x: os.path.join(_sentiment_, x)
 pinyin_f = lambda x: os.path.join(_pinyin_, x)
+radical_f = lambda x: os.path.join(_radical_, x)
 
 postag = {
     'corpus': {
@@ -72,11 +75,8 @@ pinyin = {
 
 checker = {
     'corpus': {
-        'checker': corpus_f('checker'),
+        'checker': checker_f('words.txt'),
     },
-    'model': {
-        'checker': checker_f('checker.pickle')
-    }
 }
 
 sentiment = {
@@ -86,6 +86,15 @@ sentiment = {
     },
     'model': {
         'sentiment': sentiment_f('sentiment.pickle')
+    }
+}
+
+radical = {
+    'corpus': {
+        'radical': corpus_f('radical'),
+    },
+    'model': {
+        'radical': radical_f('radical.pickle')
     }
 }
 

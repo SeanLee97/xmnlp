@@ -33,28 +33,7 @@ if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
 
-descr = """
-  文本转拼音
-/ trie tree / 
-"""
-print(descr)
-
-
 doc = """面朝大海，春暖花开"""
-
-print('\n++++++++++++++++++++++++ usage 1 ++++++++++++++++++++++++\n')
-
-"""
- 1. 使用类来进行操作
-
-"""
-from xmnlp import XmNLP 
-xm = XmNLP(doc)
-print('Text: \n', doc)
-print('PinYin: \n', xm.pinyin())
-
-
-print('\n++++++++++++++++++++++++ usage 2 ++++++++++++++++++++++++\n')
 
 import xmnlp
 print('Text: \n', doc)

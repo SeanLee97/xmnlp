@@ -1,27 +1,29 @@
-# xmnlp
+<p align='center'>/ xmnlp /</p>
+<p align='center'>小明NLP — 轻量级中文自然语言处理工具</p>
+<p align='center'> A Lightweight Chinese Natural Language Processing Toolkit</p>
+<p align='center'>v 0.1.8</p>
 
-小明NLP —— 轻量级中文自然语言处理工具
-
-A Lightweight Chinese Natural Language Processing Toolkit.
-
-# 功能
+## 功能概览
 
 * 中文分词 & 词性标注
   * 支持繁體
   * 支持自定义词典
-* 文本纠错
+* 中文拼写检查
 * 文本摘要 & 关键词提取
 * 情感分析
 * 文本转拼音
+* 获取汉字部首
 
-# 安装使用
+## 安装使用
 
-## 支持环境
+### 支持环境
 ```
-Linux / Mac os (window 未测试)
+linux / mac / windows
 python2 / python3(推荐)
 ```
-## 安装
+
+### 安装方式
+#### 方式一
 ```
 git clone https://github.com/SeanLee97/xmnlp.git
 cd /path/to/xmnlp
@@ -29,81 +31,32 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-## 依赖库
+### 依赖库
 ```
 numpy
 cPickle #(python2.7)
 ```
-
-# 算法
-* 中文分词：
-  * 构建DAG图
-  * 动态规划查找，综合正反向（正向加权反向输出）求得DAG最大概率路径
-  * 使用了SBME语料训练了一套 HMM + Viterbi 模型，解决未登录词问题
-* 文本纠错： bi-gram + levenshtein
-* 文本摘要： textrank
-* 情感分析： naive bayes
- 
-# 使用文档
-支持两种方式调用
-* 通过XmNLP实例对象的方式, 特点：方便使用系统停用词，只需XmNLP(stopword=True) 即可开启
-* 通过方法直接调用，特点： 快捷方便
-
-## 分词
-### example 1
+## 使用文档
+### 中文分词
 ```python
-from xmnlp import XmNLP
+import xmnlp
+xmnlp.set_userdict('/path/to/userdict.txt')
 
 doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
 在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。 
 自然语言生成系统把计算机数据转化为自然语言。自然语言理解系统把自然语言转化为计算机程序更易于处理的形式。"""
 
-xm = XmNLP(doc)
-xm.set_userdict('/path/to/userdict.txt')
-print(xm.seg(hmm=True))
-
-'''
-xm  = XmNLP()
-xm.set_userdict('/path/to/userdict.txt')
-print(xm.seg(doc, hmm=True))
-'''
+print(xmnlp.seg(doc, hmm=True))
+```
+结果输出
+```
+['自然语言', '处理', ':', '是', '人工智能', '和', '语言学', '领域', '的', '分支', '学科', '。', '在', '这此', '领域', '中', '探讨', '如何', '处理', '及', '运用', '自然语言', '；', '自然语言', '认知', '则', '是', '指让', '电脑', '“', '懂', '”', '人类', '的', '语言', '。', '自然语言', '生成', '系统', '把', '计算机', '数据', '转化', '为', '自然语言', '。', '自然语言', '理解', '系统', '把', '自然语言', '转化', '为', '计算机程序', '更', '易于', '处理', '的', '形式', '。']
 ```
 
-### example 2
+### 词性标注
+
 ```python
-import xmnlp as xm
-
-doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
-在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。 
-自然语言生成系统把计算机数据转化为自然语言。自然语言理解系统把自然语言转化为计算机程序更易于处理的形式。"""
-xm.set_userdict('/path/to/userdict.txt')
-print(xm.seg(doc, hmm=True))
-```
-result: ['自然语言', '处理', ':', '是', '人工智能', '和', '语言学', '领域', '的', '分支', '学科', '。', '在', '这此', '领域', '中', '探讨', '如何', '处理', '及', '运用', '自然语言', '；', '自然语言', '认知', '则', '是', '指让', '电脑', '“', '懂', '”', '人类', '的', '语言', '。', '自然语言', '生成', '系统', '把', '计算机', '数据', '转化', '为', '自然语言', '。', '自然语言', '理解', '系统', '把', '自然语言', '转化', '为', '计算机程序', '更', '易于', '处理', '的', '形式', '。']
-
-## 词性标注
-### example 1
-```python
-from xmnlp import XmNLP
-
-doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
-在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。 
-自然语言生成系统把计算机数据转化为自然语言。自然语言理解系统把自然语言转化为计算机程序更易于处理的形式。"""
-
-xm = XmNLP(doc)
-xm.set_userdict('/path/to/userdict.txt')
-print(list(xm.tag()))
-
-'''
-xm  = XmNLP()
-xm.set_userdict('/path/to/userdict.txt')
-print(xm.tag(doc, hmm=True))
-'''
-```
-
-### example 2
-```python
-import xmnlp as xm
+import xmnlp
 xm.set_userdict('/path/to/userdict.txt')
 
 doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
@@ -112,62 +65,59 @@ doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
 
 print(list(xm.tag(doc)))
 ```
-result: [('自然语言', 'l'), ('处理', 'v'), (':', 'un'), ('是', 'v'), ('人工智能', 'n'), ('和', 'c'), ('语言学', 'n'), ('领域', 'n'), ('的', 'uj'), ('分支', 'n'), ('学科', 'n'), ('。', 'un'), ('在', 'p'), ('这此', 'un'), ('领域', 'n'), ('中', 'f'), ('探讨', 'v'), ('如何', 'r'), ('处理', 'v'), ('及', 'c'), ('运用', 'vn'), ('自然语言', 'l'), ('；', 'un'), ('自然语言', 'l'), ('认知', 'v'), ('则', 'd'), ('是', 'v'), ('指让', 'un'), ('电脑', 'n'), ('“', 'un'), ('懂', 'v'), ('”', 'un'), ('人类', 'n'), ('的', 'uj'), ('语言', 'n'), ('。', 'un'), ('自然语言', 'l'), ('生成', 'v'), ('系统', 'n'), ('把', 'p'), ('计算机', 'n'), ('数据', 'n'), ('转化', 'v'), ('为', 'p'), ('自然语言', 'l'), ('。', 'un'), ('自然语言', 'l'), ('理解', 'v'), ('系统', 'n'), ('把', 'p'), ('自然语言', 'l'), ('转化', 'v'), ('为', 'p'), ('计算机程序', 'n'), ('更', 'd'), ('易于', 'v'), ('处理', 'v'), ('的', 'uj'), ('形式', 'n'), ('。', 'un')]
 
-## 文本纠错
-### example 1
-```python
-from xmnlp import XmNLP
+结果输出
 
-doc = """这理风景绣丽，而且天汽不错，我的心情各外舒畅!"""
-
-xm = XmNLP(doc)
-print(xm.checker())
-
-'''
-xm  = XmNLP()
-print(xm.checker(doc))
-'''
+```
+[('自然语言', 'l'), ('处理', 'v'), (':', 'un'), ('是', 'v'), ('人工智能', 'n'), ('和', 'c'), ('语言学', 'n'), ('领域', 'n'), ('的', 'uj'), ('分支', 'n'), ('学科', 'n'), ('。', 'un'), ('在', 'p'), ('这此', 'un'), ('领域', 'n'), ('中', 'f'), ('探讨', 'v'), ('如何', 'r'), ('处理', 'v'), ('及', 'c'), ('运用', 'vn'), ('自然语言', 'l'), ('；', 'un'), ('自然语言', 'l'), ('认知', 'v'), ('则', 'd'), ('是', 'v'), ('指让', 'un'), ('电脑', 'n'), ('“', 'un'), ('懂', 'v'), ('”', 'un'), ('人类', 'n'), ('的', 'uj'), ('语言', 'n'), ('。', 'un'), ('自然语言', 'l'), ('生成', 'v'), ('系统', 'n'), ('把', 'p'), ('计算机', 'n'), ('数据', 'n'), ('转化', 'v'), ('为', 'p'), ('自然语言', 'l'), ('。', 'un'), ('自然语言', 'l'), ('理解', 'v'), ('系统', 'n'), ('把', 'p'), ('自然语言', 'l'), ('转化', 'v'), ('为', 'p'), ('计算机程序', 'n'), ('更', 'd'), ('易于', 'v'), ('处理', 'v'), ('的', 'uj'), ('形式', 'n'), ('。', 'un')]
 ```
 
-### example 2
+### 拼写检查
+此功能基于symspell实现，建议用来检查词级别的错误，对于句子尚未能很好的解决拼写错误问题，**第一次加载字典的速度较慢（由词典大小决定）**
+
+#### 词级别
 ```python
-import xmnlp as xm
+import xmnlp
+xmnlp.set_userdict('./userdict.txt')
 
-doc = """这理风景绣丽，而且天汽不错，我的心情各外舒畅!"""
+doc = """中国人敏共和国"""
 
-print(xm.checker())
+print('Error: \n', doc)
+ret = xmnlp.checker(doc, level=0) # level = 0
+print('Correct: \n', ret)
 ```
-result: 这里风景秀丽，而且天气不错，我的心情格外舒畅!
 
-## 文本摘要
-### example 1
-```python
-from xmnlp import XmNLP
-
-doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
-在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。 
-自然语言生成系统把计算机数据转化为自然语言。自然语言理解系统把自然语言转化为计算机程序更易于处理的形式。"""
-
-xm  = XmNLP(doc, stopword=True) # stopword=True 使用系统停用词
-xm.set_stopword('/path/to/user_stopword.txt') # 使用用户自定义停用词
-# keyword
-print(xm.keyword())
-# keyphrase
-pirnt(xm.keyphrase())
-
-'''
-xm  = XmNLP()
-# keyword
-print(xm.keyword(doc))
-# keyphrase
-pirnt(xm.keyphrase(doc))
-'''
+结果输出
 ```
-### example 2
+中华人民共和国
+```
+
+#### 句子级别
+`level=1`, 不建议使用，句级别仅返回所有可能的拼写检查结果
+
 ```python
-import xmnlp as xm
-xm.set_stopword('/path/to/user_stopword.txt') # 使用用户自定义停用词
+import xmnlp
+xmnlp.set_userdict('./userdict.txt')
+
+doc = """今天天汽不错哦"""
+
+print('Error: \n', doc)
+ret = xmnlp.checker(doc, level=1) # level = 1
+print('Correct: \n', ret)
+```
+
+结果输出
+
+```
+['今天天气', '不错']
+```
+
+### 文本摘要
+基于`textrank`算法实现
+
+```python
+import xmnlp
+xm.set_stopword('/path/to/stopword.txt') # 添加用户自定义停用词
 
 doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
 在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。 
@@ -176,60 +126,71 @@ doc = """自然语言处理: 是人工智能和语言学领域的分支学科。
 # keyword
 print(xm.keyword(doc))
 # keyphrase
-pirnt(xm.keyphrase(doc))
+print(xm.keyphrase(doc))
 ```
-result: 
 
+结果输出
+
+```
 keyphrase: 
 
 自然语言理解系统自然语言转化计算机程序易于形式
-
 自然语言生成系统计算机数据转化自然语言
-
 自然语言认知指让电脑懂人类语言
-
 这此领域中探讨自然语言
-
 自然语言人工智能语言学领域分支学科
 
 keyword: 
 [('自然语言', 2.5960552414414391), ('系统', 1.3424759005594451), ('转化', 1.2404934273839832), ('领域', 1.13500044179745), ('语言', 1.0865431295952139)]
-
-## 情感分析
-### example 1
-```python
-from xmnlp import XmNLP
-
-doc = """这件衣服的质量也太差了吧！一穿就烂！"""
-
-xm  = XmNLP(doc)
-print(xm.sentiment())
-
-'''
-xm  = XmNLP()
-print(xm.sentiment(doc))
-'''
 ```
 
-### example 2
+### 情感分析
+基于朴素贝叶斯算法实现，基于酒店评价数据训练
 ```python
-import xmnlp as xm
+import xmnlp
+xmnlp.set_stopword('/path/to/stopword.txt') # 用户自定义停用词
 
-doc = """这件衣服的质量也太差了吧！一穿就烂！"""
-print(xm.sentiment())
+doc = """这件衣服的质量也太差了吧！"""
+doc2 = """这酒店真心不错"""
+print('Text: ', doc)
+print('Score: ', xmnlp.sentiment(doc))
+print('Text: ', doc2)
+print('Score: ', xmnlp.sentiment(doc2))
 ```
 
-## 自定义模型
+结果输出
+```
+Text:  这件衣服的质量也太差了吧！
+Score:  0.09661951767426591
+Text:  这酒店真心不错
+Score:  0.7947237609561072
+```
+### 汉字部首
+部首是一种文本的特征，在深度学习中我们有时可以加入部首特征来训练网络
+
+```python
+import xmnlp
+print(xmnlp.radical('自然语言处理'))
+```
+结果输出
+```
+['自', '灬', '讠', '言', '夂', '王']
+```
+
+### 自定义模型
 支持用户使用自己的语料训练模型，训练例子在[examples](https://github.com/SeanLee97/xmnlp/tree/master/examples) 的trainer_\*中
 
-## 训练语料
+### 训练语料
 [语料百度网盘](https://pan.baidu.com/s/1UtkaKfNn-R47569VAIeL-A)
 
-## 更多
+### 更多
+**本项目采用所有模型只有在第一次使用时才会开始加载，所以第一次加载速度会有些慢**
+
 更多例子请查看[examples](https://github.com/SeanLee97/xmnlp/tree/master/examples)
 
-# Reference:
+## Reference:
 本项目采用的数据主要有：
+
 * 人民日报语料
 * 结巴分词分词数据
 * snownlp情感分析语料
@@ -238,5 +199,16 @@ print(xm.sentiment())
 * [jieba](https://github.com/fxsjy/jieba)
 * [snownlp](https://github.com/isnowfy/snownlp)
 
-# License
+## 更新说明
+### version 0.1.8 (2018.09.14) 
+
+* 将默认的压缩方式由`gzip`转为了`bz2`
+* 新增汉字部首功能
+* 优化代码结果，使用`Module`进行模块的同一管理
+* 重写了`checker`的实现方式，新版本更关注词的拼写检查
+* 修复了分词/词性标注若干bug
+* 兼容windows
+* 去除类调用方式
+
+## License
 [MIT](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)

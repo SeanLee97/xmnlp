@@ -37,41 +37,31 @@ from ..config import regx as R
 from ..postag import seg
 from .checker import Checker
 
-chkr = None
+model = None
+
 def loader():
-    global chkr
-    if chkr == None:
-        try:
-            chkr = Checker()
-            model_path = C_PATH.checker['model']['checker']
-            chkr.load(model_path)
-        except:
-            pass
+    global model
+    if model == None:
+        model = Checker()
 
-def check(doc):
+def set_userdict(fpath):
     loader()
-    if isinstance(doc, str) or isinstance(doc, unicode):
-        zhs = []
-        pos = []
-        for idx, s in enumerate(doc):
-            s = s.strip()
-            if not s:
-                continue
-            if R.zh.match(s):
-                zhs.append(s)
-            else:
-                pos.append((idx, s))
 
-        res = ''
-        if len(zhs) > 0:
-            res = chkr.correct(seg(''.join(zhs)))
-            for pair in pos:
-                res = res[:pair[0]] + pair[1] + res[pair[0]:]
-        return res
+    model.userdict(fpath)
+
+"""
+Args:
+    level:
+        - 0: word
+        - 1: doc
+"""
+def check(doc, level=0):
+    loader()
+
+    if isinstance(doc, str) or isinstance(doc, unicode):
+        if level == 0:
+            return model.best_match(doc)
+        else:
+            return model.doc_checker(doc)
     else:
         raise ValueError('Error [Chekcer]: invalid input type, str is required!')
-
-def load(fname):
-    global chkr 
-    chkr = Checker()
-    chkr.load(fname)

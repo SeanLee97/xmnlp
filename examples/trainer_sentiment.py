@@ -43,10 +43,7 @@ from xmnlp.sentiment import load, predict
 # load
 load('./models/sentiment.pickle')
 
-doc = """这件衣服的质量也太差了吧！一穿就烂！"""
-doc2 = """天气太好了，我们去钓鱼吧"""
+doc = """这本书太差了"""
 
 print('Text: ', doc)
 print('Score: ', predict(doc))
-print('Text: ', doc2)
-print('Score: ', predict(doc2))
