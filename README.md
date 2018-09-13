@@ -17,10 +17,14 @@
 ## 安装使用
 
 ### 支持环境
-```
-linux / mac / windows
-python2 / python3(推荐)
-```
+#### 操作系统
+- [x] linux
+- [x] mac
+- [x] windows
+
+#### python版本
+- [x] python 2.7
+- [x] python 3.5+
 
 ### 安装方式
 #### 方式一
