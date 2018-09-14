@@ -12,7 +12,7 @@
 * 文本摘要 & 关键词提取
 * 情感分析
 * 文本转拼音
-* 获取汉字部首
+* 获取汉字偏旁部首
 
 ## 安装使用
 
@@ -28,6 +28,11 @@
 
 ### 安装方式
 #### 方式一
+```
+pip install xmnlp
+```
+
+#### 方式二
 ```
 git clone https://github.com/SeanLee97/xmnlp.git
 cd /path/to/xmnlp
