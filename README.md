@@ -3,6 +3,11 @@
 <p align='center'> A Lightweight Chinese Natural Language Processing Toolkit</p>
 <p align='center'>v 0.1.8</p>
 
+[![pypi](https://img.shields.io/badge/pypi-v0.1.8-blue.svg)](https://pypi.org/project/xmnlp/)
+![python version](https://img.shields.io/badge/python-2%2C3-orange.svg)
+[![GitHub license](https://img.shields.io/github/license/SeanLee97/xmnlp.svg)](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)
+
+
 ## 功能概览
 
 * 中文分词 & 词性标注
