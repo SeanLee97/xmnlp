@@ -7,6 +7,50 @@ import subprocess
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
 
+LONGDESC = """
+============
+xmnlp
+============
+小明NLP — 轻量级中文自然语言处理工具
+
+A Lightweight Chinese Natural Language Processing Toolkit
+
+详细使用文档见： https://github.com/SeanLee97/xmnlp
+
+功能概述
+===============
+- 中文分词 & 词性标注
+    - 支持简体
+    - 支持繁體
+    - 支持自定义词典
+- 中文拼写检查
+- 文本摘要 & 关键词提取
+- 情感分析
+- 文本转拼音
+- 获取偏旁部首
+
+环境说明
+===============
+
+支持的操作系统:
+
+- linux
+- mac
+- windows
+
+支持的python版本：
+
+- python2.7
+- python3.5+
+
+安装说明
+===============
+
+-  pip安装： ``pip install xmnlp`` / ``pip3 install xmnlp``
+-  手动安装： 下载 https://pypi.python.org/pypi/xmnlp/ ，解压运行
+   python setup.py install
+"""
+
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -52,16 +96,31 @@ setup(
     name='xmnlp',
     version='0.1.8',
     description='A Lightweight Chinese Natural Language Processing Toolkit',
+    long_description=LONGDESC,
+    keywords='chinese segmentation,chinese postager,chinese spell check,pinyin,chinese radical',
     author='SeanLee97',
+    author_email='xmlee97@gmail.com',
+    license='MIT License',
+    platforms=['all'],
     url='https://github.com/SeanLee97/xmnlp',
     packages=find_packages(exclude=('test*', )),
     classifiers=[
-        'Development Status :: 1 - Alpha',
         'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Topic :: Text Processing',
+        'Topic :: Text Processing :: Indexing',
+        'Topic :: Text Processing :: Linguistic',
     ],
+    install_requires=['numpy>=1.14.2'],
     package_data={'': ['*.md', '*.txt', '*.pickle', '*.pickle.3']},
     include_package_data=True,
 )
