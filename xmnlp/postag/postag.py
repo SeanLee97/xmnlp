@@ -92,22 +92,26 @@ class Postag(object):
                 continue
             if R.zh.match(s):
                 for w in list(self.dag.seg(s)):
-                    yield w
+                    if len(w.strip()) > 0:
+                        yield w
             else:
                 tmp = R.skip.split(s)
                 for x in tmp:
                     if R.skip.match(x):
-                        yield x
+                        if len(x.strip()) > 0:
+                            yield x
                     else:
                         x = x.replace(' ','')
                         endigts = R.endigt.findall(x)
                         parts = re.split(r'[0-9]+\.?[0-9]+|[0-9]+|[a-zA-Z]+', x)
                         if len(endigts) > 0:
                             for w, t in self.re_decode(parts, endigts, False):
-                                yield w
+                                if len(w.strip()) > 0:
+                                    yield w
                         else:
                             for xx in x:
-                                yield xx
+                                if len(xx.strip()) > 0:
+                                    yield xx
     def tag(self, sent):
         for s in R.zh.split(sent):
             s = s.strip()
@@ -117,19 +121,23 @@ class Postag(object):
                 continue
             if R.zh.match(s):
                 for w,t in self.dag.tag(s):
-                    yield w, t
+                    if len(w.strip()) > 0:
+                        yield w, t
             else:
                 tmp = R.skip.split(s)
                 for x in tmp:
                     if R.skip.match(x):
-                        yield x
+                        if len(x.strip()) > 0:
+                            yield x
                     else:
                         x = x.replace(' ', '')
                         endigts = R.endigt.findall(x)
                         parts = re.split(r'[0-9]+\.?[0-9]+|[0-9]+|[a-zA-Z]+', x)
                         if len(endigts) > 0:
                             for w, t in self.re_decode(parts, endigts, True):
-                                yield w, t
+                                if len(w.strip()) > 0:
+                                    yield w, t
                         else:
                             for xx in x:
-                                yield xx, 'un'
+                                if len(xx.strip()) > 0:
+                                    yield xx, 'un'
