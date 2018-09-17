@@ -5,6 +5,7 @@
 
 [![pypi](https://img.shields.io/badge/pypi-v0.1.8-blue.svg)](https://pypi.org/project/xmnlp/)
 ![python version](https://img.shields.io/badge/python-2%2C3-orange.svg)
+![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 [![GitHub license](https://img.shields.io/github/license/SeanLee97/xmnlp.svg)](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)
 
 
@@ -20,16 +21,6 @@
 * 获取汉字偏旁部首
 
 ## 安装使用
-
-### 支持环境
-#### 操作系统
-- [x] linux
-- [x] mac
-- [x] windows
-
-#### python版本
-- [x] python 2.7
-- [x] python 3.5+
 
 ### 安装方式
 #### 方式一
