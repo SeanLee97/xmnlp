@@ -39,8 +39,8 @@ python setup.py install
 ### 依赖库
 ```
 numpy
-cPickle #(python2.7)
 ```
+
 ## 使用文档
 ### 中文分词
 ```python
