@@ -1,40 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, unicode_literals
-
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
 
-"""MIT License
-Copyright (c) 2018 Sean
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE."""
-
-__author__ = 'sean lee'
-__version__ = '0.1.8'
-
+from __future__ import absolute_import, unicode_literals
+import io
 import os
 import sys
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-
+from functools import partial
+from multiprocessing import cpu_count, Pool
 from .config import path as C_PATH
 from .config.tag import tag_dict
 from . import postag as _postag
@@ -45,9 +22,17 @@ from . import pinyin as _pinyin
 from . import radical as _radical
 from .utils import safe_input, filelist
 
-import io
+if sys.version_info[0] == 2:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+
+__author__ = 'sean lee'
+__version__ = '0.2.0'
+
 
 def load_stopword(fpath):
+    """load stopwords from file """
+
     stopwords = set()
     for fname in filelist(fpath):
         with io.open(fname, 'r', encoding='utf-8') as f:
@@ -56,74 +41,139 @@ def load_stopword(fpath):
                 stopwords.add(line)
     return stopwords
 
-sys_stopwords = load_stopword(C_PATH.stopword['corpus']['stopword'])
+
+process_pool = None
+ALLOW_POS = ['an', 'i', 'j', 'l', 'n', 'nr', 'ns', 'nt', 'nz', 't', 'v', 'vd', 'vn', 'eng']
+SYS_STOPWORDS = load_stopword(C_PATH.stopword['corpus']['stopword'])
+
+
+def set_process_pool(n_jobs=-1):
+    """setup process pool
+    Args:
+      - n_jobs: pool size
+    """
+
+    global process_pool
+    if n_jobs == -1:
+        n_jobs = cpu_count()
+    process_pool = Pool(n_jobs)
+
 
 def set_stopword(fpath):
-    global sys_stopwords
+    """set stopwords from file"""
+    global SYS_STOPWORDS
     words = load_stopword(fpath)
-    sys_stopwords = set(words) | sys_stopwords
+    SYS_STOPWORDS = set(words) | SYS_STOPWORDS
+
 
 def set_userdict(fpath):
+    """set user dict"""
+
     _postag.set_userdict(fpath)
 
-def seg(txt, hmm=True):
-    txt = safe_input(txt)
-    return _postag.seg(txt, hmm)
 
-def tag(txt, hmm=True):
-    txt = safe_input(txt)
-    return _postag.tag(txt, hmm)
+def seg(text, hmm=True):
+    """word segmentation"""
 
-def keyword(txt, k=10, stopword=True, 
-    allowPOS=['an', 'i', 'j', 'l', 'n', 'nr', 'ns', 'nt', 'nz', 't', 'v', 'vd', 'vn', 'eng']):
-    global sys_stopwords
+    text = safe_input(text)
+    return _postag.seg(text, hmm)
 
-    txt = safe_input(txt)
-    if stopword:
-        stopwords = sys_stopwords
-    else:
-        stopwords = []
-    
-    return _summary.keyword(txt, k=k, stopword=stopwords, allowPOS=allowPOS)
+def seg_parallel(texts, hmm=False, n_jobs=-1):
+    """seg texts parallel
+    Args:
+      - hmm: bool, whether to use hmm to detect new words
+      - n_jobs: pool size of multi-process
+    Return:
+      generator
+    """
 
-def keyphrase(txt, k=10, stopword=True):
-    global sys_stopwords
+    if not isinstance(texts, (list, tuple)):
+        raise ValueError("You should pass a list or tuple texts")
+    if process_pool is None:
+        set_process_pool(n_jobs)
+    seg_func = partial(seg, hmm=hmm)
+    for words in process_pool.map(seg_func, texts):
+        yield words
 
-    txt = safe_input(txt)
-    if stopword:
-        stopwords = sys_stopwords
-    else:
-        stopwords = []
-    return _summary.keyphrase(txt, k=k, stopword=stopwords)
 
-def pinyin(txt):
-    txt = safe_input(txt)
-    return _pinyin.translate(txt)
+def tag(text, hmm=True):
+    """word tagging"""
 
-"""
-Args:
-    level:
-        - 0: word
-        - 1: doc
-"""
-def checker(txt, level=0):
-    txt = safe_input(txt)
-    return _checker.check(txt, level=level)
+    text = safe_input(text)
+    return _postag.tag(text, hmm)
 
-def sentiment(txt, stopword=True):
-    global sys_stopwords
 
-    txt = safe_input(txt)
-    if stopword:
-        stopwords = sys_stopwords
-    else:
-        stopwords = []
+def tag_parallel(texts, hmm=False, n_jobs=-1):
+    """tag texts parallel
+    Args:
+      - hmm: bool, whether to use hmm to detect new words
+      - n_jobs: pool size of multi-process
+    Return:
+      generator
+    """
+    if not isinstance(texts, (list, tuple)):
+        raise ValueError("You should pass a list or tuple texts")
+    if process_pool is None:
+        set_process_pool(n_jobs)
+    tag_func = partial(tag, hmm=hmm)
+    for ret in process_pool.map(tag_func, texts):
+        yield ret
 
-    return _sentiment.predict(txt, stopword=stopwords)
 
-def radical(txt):
-    txt = safe_input(txt)
-    return _radical.radical(txt)
+def keyword(text, k=10, stopword=True, allowPOS=None):
+    """extract keyword from text"""
 
-def tag_mean(tag):
-    return tag_dict.get(tag, 'undefined !')
+    if allowPOS is None:
+        allowPOS = ALLOW_POS
+    text = safe_input(text)
+    stopwords = SYS_STOPWORDS if stopword else []
+
+    return _summary.keyword(text, k=k, stopword=stopwords, allowPOS=allowPOS)
+
+
+def keyphrase(text, k=10, stopword=True):
+    """extract keyphrase from text"""
+
+    text = safe_input(text)
+    stopwords = SYS_STOPWORDS if stopword else []
+    return _summary.keyphrase(text, k=k, stopword=stopwords)
+
+
+def pinyin(text):
+    """get pinyin"""
+
+    text = safe_input(text)
+    return _pinyin.translate(text)
+
+
+def checker(text, level=0):
+    """ text checker 文本纠错
+    Args:
+        level:
+            - 0: word
+            - 1: doc
+    """
+
+    text = safe_input(text)
+    return _checker.check(text, level=level)
+
+
+def sentiment(text, stopword=True):
+    """text sentiment analyse"""
+
+    text = safe_input(text)
+    stopwords = SYS_STOPWORDS if stopword else []
+    return _sentiment.predict(text, stopword=stopwords)
+
+
+def radical(text):
+    """get radical from text"""
+
+    text = safe_input(text)
+    return _radical.radical(text)
+
+
+def tag_mean(tag_name):
+    """get meaning of tag"""
+
+    return tag_dict.get(tag_name, '{} not undefined !'.format(tag_name))

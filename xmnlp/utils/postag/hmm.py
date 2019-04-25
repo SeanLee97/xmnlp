@@ -1,59 +1,37 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, unicode_literals
-
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
 
-"""MIT License
-Copyright (c) 2018 Sean
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE."""
-
-
+from __future__ import absolute_import, unicode_literals
 import sys
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    range = xrange
-
 import io
-import os
-
 from math import log
 from collections import defaultdict
 from xmnlp.module import Module
 from xmnlp.utils import safe_input
 
+if sys.version_info[0] == 2:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    range = xrange
+
 BOS = '<BOS>'
 EOS = '<EOS>'
 UNK = '<UNK>'
+
 
 class HMM(Module):
     __notsave__ = []
     __onlysave__ = []
 
-    def __init__(self, N=2, bems=True, *args):
+    def __init__(self, N=2, bems=True):
         self.N = 2
         if N == 3:
-            self.N == N 
-            
+            self.N = N
         self.bems = bems
         self.line_total = -1
 
@@ -80,22 +58,19 @@ class HMM(Module):
             with io.open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
                     line = safe_input(line)
-                    if len(line) == 0:
+                    if not line:
                         continue
                     self.line_total += 1
                     datas.append(list(map(lambda x: x.split('/'), line.split())))
         return datas
 
     def train(self, fname):
-
-        datas = self.load_data(fname)            
-
+        datas = self.load_data(fname)
         for data in datas:
             # init curr
             curr = [BOS] * 2
             self.bi[tuple(curr)] += 1
             self.uni[BOS] += 2
-
             for word, tag in data:
                 curr.append(tag)
                 self.state.add(tag)
@@ -103,21 +78,16 @@ class HMM(Module):
                 self.uni[tag] += 1
                 self.bi[tuple(curr[1:])] += 1
                 self.tri[tuple(curr)] += 1
-
                 curr.pop(0)
-
         self.words = set([key[0] for key in self.emit.keys()])
-        
-        for (word,tag) in self.emit:
-            self._emit_prob[(word,tag)] = self.calc_e(word,tag)
-
+        for (word, tag) in self.emit:
+            self._emit_prob[(word, tag)] = self.calc_e(word, tag)
         if self.N == 3:
             for gram in list(self.tri):
                 self._trans_prob[gram] = self.calc_trans(gram)
         else:
             for gram in list(self.bi):
                 self._trans_prob[gram] = self.calc_trans(gram)
-
         for s in self.state:
             t = self.uni.get(s, 0)
             t = log(t) if self.bems else t
@@ -125,7 +95,7 @@ class HMM(Module):
 
 
     def calc_e(self, word, tag):
-        x = self.emit[(word,tag)]
+        x = self.emit[(word, tag)]
         y = self.uni[tag]
         return float(x + 1) / (y + len(self.words)*len(self.uni))
 
@@ -149,7 +119,7 @@ class HMM(Module):
             else:
                 return self.state
 
-        def get_word(sent,k):
+        def get_word(sent, k):
             if k < 0:
                 return BOS
             else:
@@ -168,17 +138,17 @@ class HMM(Module):
             # run
             for k in range(1, len(sent)+1):
                 temp_path = {}
-                word = get_word(sent,k-1)
+                word = get_word(sent, k-1)
                 if word not in self.words:
                     word = UNK
                 for u in get_states(k-1):
                     for v in get_states(k):
-                        V[k,u,v], prev_w = max([(V[k-1,w,u] * smooth(self._trans_prob[(w,u,v)] * self._emit_prob[(word,v)]), w) for w in get_states(k-2) if V[k-1, w] > 0])
-                        temp_path[u,v] = path[prev_w, u] + [v]
+                        V[k, u, v], prev_w = max([(V[k-1, w, u] * smooth(self._trans_prob[(w, u, v)] * self._emit_prob[(word, v)]), w) for w in get_states(k-2) if V[k-1, w] > 0])
+                        temp_path[u, v] = path[prev_w, u] + [v]
                 path = temp_path
             # last step
-            prob,umax,vmax = max([(V[len(sent),u,v] * self._trans_prob[(u,v,BOS)],u, v) for u in self.state for v in self.state])
-            return (prob, path[umax,vmax])
+            prob, umax, vmax = max([(V[len(sent), u, v] * self._trans_prob[(u, v, BOS)], u, v) for u in self.state for v in self.state])
+            return (prob, path[umax, vmax])
         else:
             V = [{}]
             path = {}
@@ -202,5 +172,5 @@ class HMM(Module):
             return (prob, path[state])
 
     def tag(self, sent):
-        prob, tags = self.viterbi(sent)
+        _, tags = self.viterbi(sent)
         return zip(list(sent), tags)

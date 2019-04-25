@@ -1,45 +1,25 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
 
-"""MIT License
-Copyright (c) 2018 Sean
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE."""
-
-
-import sys
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-
+from __future__ import absolute_import, unicode_literals
 import io
 import os
-
+import sys
+from math import log, exp
+from collections import defaultdict
 from ..module import Module
 from ..utils import safe_input
 from ..postag import seg
 
-from math import log, exp
-from collections import defaultdict
+if sys.version_info[0] == 2:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+
 
 class NBayes(Module):
     __notsave__ = []
@@ -51,6 +31,8 @@ class NBayes(Module):
         self.total = 0
 
     def process_data(self, data):
+        """process train data"""
+
         for d in data:
             label = d[0]
             doc = d[1]
@@ -63,8 +45,9 @@ class NBayes(Module):
         self.total = sum(self.counter.values())
 
     def calc_score(self, sent):
+        """calculate sentiment score"""
+
         tmp = {}
-        
         for k in self.corpus:
             tmp[k] = log(self.counter[k]) - log(self.total)
             for word in sent:
@@ -85,35 +68,35 @@ class NBayes(Module):
         return (ret, prob)
 
 class Sentiment(NBayes):
+    def filter_stopword(self, words, stopword=None):
+        """filter stopwords"""
 
-    def filter_stopword(self, words, stopword=[]):
-        if len(stopword) == 0:
+        if stopword is None:
             return words
-        ret = []
+        ret = [word for word in words if word not in stopword]
         for word in words:
             if word not in stopword:
                 ret.append(word)
         return ret
 
     def load_data(self, posfname, negfname):
+        """load dataset from file"""
+
         def get_file(path):
             if os.path.isdir(path):
                 for root, dirs, files in os.walk(path):
-                    if len(dirs) == 0:
+                    if not dirs:
                         for f in files:
                             yield os.sep.join([root, f])
             else:
                 yield path
 
-        pos_docs = []
-        neg_docs = []
-
+        pos_docs, neg_docs = [], []
         for fname in get_file(posfname):
             with io.open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
                     line = safe_input(line)
                     pos_docs.append(seg(line))
-
         for fname in get_file(negfname):
             with io.open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
@@ -122,9 +105,10 @@ class Sentiment(NBayes):
 
         return pos_docs, neg_docs
 
-    def train(self, posfname, negfname, stopword=[]):
-        pos_docs, neg_docs = self.load_data(posfname, negfname)
+    def train(self, posfname, negfname, stopword=None):
+        """train sentiment model"""
 
+        pos_docs, neg_docs = self.load_data(posfname, negfname)
         data = []
         for sent in neg_docs:
             data.append(('neg', self.filter_stopword(sent, stopword=stopword)))
@@ -133,7 +117,9 @@ class Sentiment(NBayes):
 
         self.process_data(data)
 
-    def predict(self, doc, stopword=[]):
+    def predict(self, doc, stopword=None):
+        """predict sentiment score"""
+
         sent = seg(doc)
         ret, prob = self.calc_score(self.filter_stopword(sent, stopword=stopword))
         if ret == 'pos':

@@ -1,46 +1,24 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, unicode_literals
-
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
 
-"""MIT License
-Copyright (c) 2018 Sean
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE."""
-
-
+from __future__ import absolute_import, unicode_literals
+import io
 import sys
+from math import log
+from xmnlp.module import Module
+from xmnlp.utils import safe_input
+from .hmm import HMM
+
 if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
-    range = xrange 
+    range = xrange
 
-import io
-import os
-
-from xmnlp.module import Module
-from xmnlp.utils import safe_input
-
-from math import log
-from .hmm import HMM
 
 class DAG(Module):
     __notsave__ = []
@@ -49,6 +27,8 @@ class DAG(Module):
     def __init__(self, *args):
         self.hmm = True
         self.dict = {}
+        self.hmm_segger = None
+        self.hmm_tagger = None
 
     def set_hmm(self, hmm=True):
         self.hmm = hmm
@@ -62,11 +42,11 @@ class DAG(Module):
         }
 
     def load_hmm(self, segfname=None, tagfname=None):
-        if segfname == None and tagfname == None:
+        if segfname is None and tagfname is None:
             self.hmm = False
             return
 
-        if segfname != None:
+        if segfname is not None:
             try:
                 self.hmm_segger = HMM(bems=True)
                 self.hmm_segger.load(segfname)
@@ -74,7 +54,7 @@ class DAG(Module):
                 print('Error: load seg hmm model failed, ', e)
                 self.hmm = False
 
-        if tagfname != None:
+        if tagfname is not None:
             try:
                 self.hmm_tagger = HMM(bems=False)
                 self.hmm_tagger.load(tagfname)
@@ -99,11 +79,9 @@ class DAG(Module):
         }
 
     def load_dict(self, fpath, authfreq=False, defaultfreq=5):
-
         counter = {}
         total = 0
         word_tag = {}
-        
         for fname in self.filelist(fpath):
             with io.open(fname, 'r', encoding='utf-8') as f:
                 for idx, line in enumerate(f, 1):
@@ -145,7 +123,9 @@ class DAG(Module):
                             if wfrag not in counter:
                                 counter[wfrag] = 0
                     except ValueError:
-                        raise ValueError('invalid dictionary entry in %s at Line %s: %s' % (fname, idx, line))
+                        raise ValueError('''invalid dictionary entry 
+                                            in %s at Line %s: %s''' % (fname, idx, line))
+
         return counter, total, word_tag
 
     def get_dag(self, sent):

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 import subprocess
@@ -6,6 +8,13 @@ import subprocess
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
+
+if sys.version_info[0] == 2:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+
+
+__version__ = '0.2.0'
 
 LONGDESC = """
 ============
@@ -94,11 +103,11 @@ def read(fname):
 
 setup(
     name='xmnlp',
-    version='0.1.8',
+    version=__version__,
     description='A Lightweight Chinese Natural Language Processing Toolkit',
     long_description=LONGDESC,
     keywords='chinese segmentation,chinese postager,chinese spell check,pinyin,chinese radical',
-    author='SeanLee97',
+    author='sean lee',
     author_email='xmlee97@gmail.com',
     license='MIT License',
     platforms=['all'],

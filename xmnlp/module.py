@@ -1,60 +1,47 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, unicode_literals
-
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
 
-"""MIT License
-Copyright (c) 2018 Sean
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE."""
+from __future__ import absolute_import, unicode_literals
 
+import os
+import bz2
 import sys
+
 if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
     range = xrange
-    import cPickle as pickle 
+    import cPickle as pickle
 else:
     import pickle
 
-import os
-import bz2
 
 class Module(object):
     __notsave__ = []
     __onlysave__ = []
 
     def filelist(self, fpath):
+        """get file list from filename"""
+
         if os.path.isdir(fpath):
-             for root, dirs, files in os.walk(fpath):
-                 if len(dirs) == 0:
-                     for f in files:
-                         yield os.sep.join([root, f])
+            for root, dirs, files in os.walk(fpath):
+                if not dirs:
+                    for f in files:
+                        yield os.sep.join([root, f])
         else:
             yield fpath
 
     def save(self, fname, iszip=True):
+        """save model"""
+
         d = {}
         for k, v in self.__dict__.items():
-            if len(self.__onlysave__) > 0:
+            if self.__onlysave__:
                 if k not in self.__onlysave__:
                     continue
             elif k in self.__notsave__:
@@ -77,7 +64,9 @@ class Module(object):
             f.write(pickle.dumps(d))
             f.close()
 
-    def load(self, fname, iszip=True):            
+    def load(self, fname, iszip=True):
+        """load model"""
+
         if sys.version_info[0] == 3:
             fname = fname + '.3'
         if not iszip:
