@@ -14,14 +14,16 @@ def native_content(content):
         content = content.decode('utf-8')
     return content
 
+
 def safe_input(content):
     content = content.strip()
     return native_content(content)
 
+
 def filelist(path):
     if os.path.isdir(path):
         for root, dirs, files in os.walk(path):
-            if len(dirs) == 0:
+            if not dirs:
                 for f in files:
                     yield os.sep.join([root, f])
     else:
