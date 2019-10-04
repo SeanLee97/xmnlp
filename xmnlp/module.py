@@ -4,7 +4,7 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 
@@ -27,7 +27,6 @@ class Module(object):
 
     def filelist(self, fpath):
         """get file list from filename"""
-
         if os.path.isdir(fpath):
             for root, dirs, files in os.walk(fpath):
                 if not dirs:
@@ -38,7 +37,6 @@ class Module(object):
 
     def save(self, fname, iszip=True):
         """save model"""
-
         d = {}
         for k, v in self.__dict__.items():
             if self.__onlysave__:
@@ -66,7 +64,6 @@ class Module(object):
 
     def load(self, fname, iszip=True):
         """load model"""
-
         if sys.version_info[0] == 3:
             fname = fname + '.3'
         if not iszip:

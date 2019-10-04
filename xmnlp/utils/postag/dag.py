@@ -4,7 +4,7 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import io
@@ -41,23 +41,23 @@ class DAG(Module):
             'word_tag': word_tag
         }
 
-    def load_hmm(self, segfname=None, tagfname=None):
-        if segfname is None and tagfname is None:
+    def load_hmm(self, seg_fname=None, tag_fname=None):
+        if seg_fname is None and tag_fname is None:
             self.hmm = False
             return
 
-        if segfname is not None:
+        if seg_fname is not None:
             try:
                 self.hmm_segger = HMM(bems=True)
-                self.hmm_segger.load(segfname)
+                self.hmm_segger.load(seg_fname)
             except Exception as e:
                 print('Error: load seg hmm model failed, ', e)
                 self.hmm = False
 
-        if tagfname is not None:
+        if tag_fname is not None:
             try:
                 self.hmm_tagger = HMM(bems=False)
-                self.hmm_tagger.load(tagfname)
+                self.hmm_tagger.load(tag_fname)
             except Exception as e:
                 print('Error: load tag hmm model failed, ', e)
                 self.hmm = False
@@ -146,28 +146,12 @@ class DAG(Module):
             dag[k] = tmp
         return dag
 
-    def get_route(self, sent, dag, r=None, reverse=True):
+    def get_route(self, sent, dag):
         route = {}
         N = len(sent)
-
-        if reverse:
-            route[N] = (1, 0)
-            if r != None:
-                r[N] = (1, 0)
-            for idx in range(N - 1, -1, -1):
-                if r != None:
-                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log(self.dict['total']) + route[x+1][0]) + r[x+1][0], x) for x in dag[idx])
-                else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log(self.dict['total']) + route[x+1][0], x) for x in dag[idx])
-        else:
-            for idx in range(N):
-                route[idx] = (log(self.dict['counter'].get(sent[idx]) or 1) - log(self.dict['total']), 0)
-
-            for idx in range(N):
-                if r != None:
-                    route[idx] = max(((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log(self.dict['total']) + route[x][0]) + r[x][0], x) for x in dag[idx])
-                else:
-                    route[idx] = max((log(self.dict['counter'].get(sent[idx: x-1]) or 1) - log(self.dict['total']) + route[x][0], x) for x in dag[idx])
+        route[N] = (1, 0)
+        for idx in range(N - 1, -1, -1):
+            route[idx] = max((log(self.dict['counter'].get(sent[idx: x+1]) or 1) - log(self.dict['total']) + route[x+1][0], x) for x in dag[idx])
         return route
 
     def tag(self, sent):
@@ -182,9 +166,7 @@ class DAG(Module):
 
     def decode(self, sent):
         dag = self.get_dag(sent)
-        #route = self.get_route(sent, dag, reverse=False)
-        #route = self.get_route(sent, dag, r=route, reverse=True)
-        route = self.get_route(sent, dag, reverse=True)
+        route = self.get_route(sent, dag)
 
         x = 0
         buffer = ''
@@ -200,7 +182,7 @@ class DAG(Module):
                         yield buffer
                         buffer = ''
                     else:
-                        if not self.dict['counter'].get(buffer):
+                        if buffer not in self.dict['counter']:
                             if self.hmm:
                                 for item in self.hmm_seg(buffer):
                                     yield item
@@ -213,12 +195,11 @@ class DAG(Module):
                         buffer = ''
                 yield l_word
             x = y
-
         if buffer:
             if len(buffer) == 1:
                 yield buffer
             else:
-                if not self.dict['counter'].get(buffer):
+                if buffer not in self.dict['counter']:
                     if self.hmm:
                         for item in self.hmm_seg(buffer):
                             yield item

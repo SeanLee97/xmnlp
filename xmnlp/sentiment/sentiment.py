@@ -4,7 +4,7 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import io
@@ -12,9 +12,9 @@ import os
 import sys
 from math import log, exp
 from collections import defaultdict
-from ..module import Module
-from ..utils import safe_input
-from ..postag import seg
+from xmnlp.module import Module
+from xmnlp.utils import safe_input
+from xmnlp.postag import seg
 
 if sys.version_info[0] == 2:
     reload(sys)

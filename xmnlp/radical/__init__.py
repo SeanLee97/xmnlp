@@ -4,11 +4,11 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import sys
-from ..config import path as C_PATH
+from xmnlp.config import path as C_PATH
 from .radical import Radical
 
 if sys.version_info[0] == 2:
@@ -19,12 +19,11 @@ model = None
 
 def loader():
     """load model"""
-
     global model
     if model is None:
+        print("(Lazy Load) Loading model...")
         model = Radical()
-        model_path = C_PATH.radical['model']['radical']
-        model.load(model_path)
+        model.load(C_PATH.radical['model']['radical'])
 
 
 def radical(text):

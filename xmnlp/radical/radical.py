@@ -4,12 +4,12 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import sys
 import io
-from ..module import Module
+from xmnlp.module import Module
 
 if sys.version_info[0] == 2:
     reload(sys)

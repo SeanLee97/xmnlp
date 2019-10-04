@@ -4,13 +4,13 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import io
 import sys
-from ..utils import safe_input, filelist
-from ..config import path as C_PATH
+from xmnlp.utils import safe_input, filelist
+from xmnlp.config import path as C_PATH
 
 if sys.version_info[0] == 2:
     reload(sys)
