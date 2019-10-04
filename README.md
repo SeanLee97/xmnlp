@@ -3,7 +3,7 @@
 <p align='center'> A Lightweight Chinese Natural Language Processing Toolkit</p>
 <p align='center'>v 0.2.1</p>
 
-<p align='center'><strong>R.I.P</strong> 0.2.1版是 xmnlp 最后一个兼容 Python 2.7 的版本</div>
+<p align='center'><strong>R.I.P</strong> 0.2.2版是 xmnlp 最后一个兼容 Python 2.7 的版本</div>
 
 [![pypi](https://img.shields.io/badge/pypi-v0.2.1-blue.svg)](https://pypi.org/project/xmnlp/)
 ![python version](https://img.shields.io/badge/python-2%2C3-orange.svg)
