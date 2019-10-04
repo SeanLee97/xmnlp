@@ -4,13 +4,13 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import re
 import sys
+from xmnlp import postag
 from .textrank import TextRank, KeywordTextRank
-from .. import postag
 
 if sys.version_info[0] == 2:
     reload(sys)
@@ -20,12 +20,10 @@ if sys.version_info[0] == 2:
 
 def keyword(text, k=10, stopword=None, allowPOS=None):
     """extract keyword from text"""
-
     if stopword is None:
         stopword = []
     if allowPOS is None:
         allowPOS = []
-
     words = []
     for word, tag in postag.tag(text):
         if word not in stopword:
@@ -41,7 +39,6 @@ def keyword(text, k=10, stopword=None, allowPOS=None):
 
 def keyphrase(text, k=10, stopword=None):
     """extract keyphrase from text"""
-
     def get_sents(doc):
         re_line_skip = re.compile('[\r\n]')
         re_delimiter = re.compile('[，。？！；]')

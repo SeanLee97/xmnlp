@@ -7,7 +7,7 @@ import subprocess
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 if sys.version_info[0] == 2:
     reload(sys)
@@ -100,6 +100,7 @@ def read(fname):
     with open(fname) as fp:
         content = fp.read()
     return content
+
 
 setup(
     name='xmnlp',

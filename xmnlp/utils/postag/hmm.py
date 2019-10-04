@@ -4,7 +4,7 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import sys
@@ -125,8 +125,8 @@ class HMM(Module):
             else:
                 return sent[k]
 
-        def smooth(x):
-            return x + 1e-12
+        def smooth(x, alpha=1e-8):
+            return x + alpha
 
         V = {}
         path = {}
@@ -164,10 +164,9 @@ class HMM(Module):
                 if word not in self.words:
                     word = UNK
                 for u in get_states(k):
-                    V[k][u], state = max([(V[k-1][w] * smooth(self._trans_prob[(w, u)] * self._emit_prob[(word, u)]), w) for w in get_states(k) if V[k-1][w] > 0])
+                    V[k][u], state = max([(V[k-1][w] * smooth(self._trans_prob[(w, u)] * self._emit_prob[(word, u)]), w) for w in get_states(k) if V[k-1][w] >= 0])
                     temp_path[u] = path[state] + [u]
                 path = temp_path
-                #print(path)
             prob, state = max([(V[N-1][u], u) for u in self.state])
             return (prob, path[state])
 

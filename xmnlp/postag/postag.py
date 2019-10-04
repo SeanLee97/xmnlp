@@ -4,14 +4,14 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import absolute_import, unicode_literals
 import sys
 import re
-from ..utils.postag import DAG
-from ..utils.postag import HMM
-from ..config import regx as R
+from xmnlp.utils.postag import DAG
+from xmnlp.utils.postag import HMM
+from xmnlp.config import regx as R
 
 if sys.version_info[0] == 2:
     reload(sys)
@@ -34,10 +34,10 @@ class Postag(object):
         self.dag.load(fname)
 
     def load_seg(self, fname):
-        self.dag.load_hmm(segfname=fname)
+        self.dag.load_hmm(seg_fname=fname)
 
     def load_tag(self, fname):
-        self.dag.load_hmm(tagfname=fname)
+        self.dag.load_hmm(tag_fname=fname)
 
     def train(self, srcfname, outfname):
         self.dag.train(srcfname)
@@ -52,72 +52,47 @@ class Postag(object):
     def set_hmm(self, hmm=True):
         self.dag.set_hmm(hmm)
 
-    def re_decode(self, parts, arr):
-        if parts[0]:
-            for x in parts[0]:
-                yield x, 'un'
-        for x, y in zip(parts[1:], arr):
-            if y.isalpha():
-                yield y, 'eng'
-            else:
-                yield y, 'm'
+    def seg(self, text):
+        for w, _ in self.tag(text):
+            yield w
+
+    def tag(self, text):
+        specials = []
+        for (x, tag) in [(r[1].finditer(text), r[0]) for r in R.special_tags]:
             for xx in x:
-                yield xx, 'un'
-
-    def seg(self, sent):
-        for s in R.zh.split(sent):
-            s = s.strip()
-            if not s:
+                span = xx.span()
+                specials.append((span, text[span[0]:span[1]], tag))
+        if specials:
+            specials = sorted(specials, key=lambda x: x[0][0])
+            spans = [(text[:specials[0][0][0]], None)]
+            for i in range(1, len(specials)):
+                spans.append((specials[i-1][1], specials[i-1][2]))
+                l, r = specials[i-1][0][1], specials[i][0][0]
+                spans.append((text[l:r], None))
+            spans.append((specials[-1][1], specials[-1][2]))
+            spans.append((text[specials[-1][0][1]:], None))
+        else:
+            spans = [(text, None)]
+        for t in spans:
+            if not t[0]:
                 continue
-            if R.zh.match(s):
-                for w in list(self.dag.seg(s)):
-                    if w.strip():
-                        yield w
-            else:
-                tmp = R.skip.split(s)
-                for x in tmp:
-                    if R.skip.match(x):
-                        if x.strip():
-                            yield x
+            if t[1] is None:
+                sent = R.blank.sub("", t[0])
+                if not R.skip.sub("", sent):
+                    yield sent, "un"
+                    continue
+                for s in R.eng_digt.split(sent):
+                    if not s:
+                        continue
+                    if R.isalpha.match(s):
+                        yield s, "eng"
+                    elif s.isdigit():
+                        yield s, "m"
+                    elif R.skip.match(s):
+                        yield s, "un"
                     else:
-                        x = x.replace(' ','')
-                        endigts = R.endigt.findall(x)
-                        parts = re.split(r'[0-9]+\.?[0-9]+|[0-9]+|[a-zA-Z]+', x)
-                        if endigts:
-                            for w, _ in self.re_decode(parts, endigts):
-                                if w.strip():
-                                    yield w
-                        else:
-                            for xx in x:
-                                if xx.strip():
-                                    yield xx
-
-    def tag(self, sent):
-        for s in R.zh.split(sent):
-            s = s.strip()
-            s = R.skip.sub('', s)
-
-            if not s:
-                continue
-            if R.zh.match(s):
-                for w, t in self.dag.tag(s):
-                    if w.strip():
-                        yield w, t
+                        for w, t in self.dag.tag(s):
+                            if w:
+                                yield w, t
             else:
-                tmp = R.skip.split(s)
-                for x in tmp:
-                    if R.skip.match(x):
-                        if x.strip():
-                            yield x
-                    else:
-                        x = x.replace(' ', '')
-                        endigts = R.endigt.findall(x)
-                        parts = re.split(r'[0-9]+\.?[0-9]+|[0-9]+|[a-zA-Z]+', x)
-                        if endigts:
-                            for w, t in self.re_decode(parts, endigts):
-                                if w.strip():
-                                    yield w, t
-                        else:
-                            for xx in x:
-                                if xx.strip():
-                                    yield xx, 'un'
+                yield t[0], t[1]

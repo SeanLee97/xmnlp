@@ -4,14 +4,14 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
 from __future__ import unicode_literals
 import sys
 import io
-from ..module import Module
-from ..utils.trie import Trie
-from ..utils import safe_input
+from xmnlp.module import Module
+from xmnlp.utils.trie import Trie
+from xmnlp.utils import safe_input
 
 if sys.version_info[0] == 2:
     reload(sys)
