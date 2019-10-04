@@ -256,7 +256,7 @@ xmnlp.radical('自然语言处理')
 支持用户使用自己的语料训练模型，训练例子在[examples](https://github.com/SeanLee97/xmnlp/tree/master/examples) 的trainer_\*中
 
 ### 训练语料
-[语料百度网盘](https://pan.baidu.com/s/1947bj7WGfz75vZxP22nUZA)
+[百度网盘](https://pan.baidu.com/s/1ML2iRGg41q0yjHXu5K9zHA) 提取码: 9xkp
 
 ## 更多
 ### 关于贡献者
