@@ -262,12 +262,6 @@ xmnlp.radical('自然语言处理')
 ### 关于贡献者
 当前本 project 主要者贡献这来自 @4AI 成员，我们期待更多小伙伴的 contributions，一起打造一款简单易用的中文 NLP 工具
 
-### 交流群
-欢迎热爱中文 NLP 技术的伙伴加入
-
-- telegram：
-- qq 群：
-
 ### 学术引用 citation
 ```
 @misc{
