@@ -16,6 +16,8 @@ from .checker import Checker
 if sys.version_info[0] == 2:
     reload(sys)
     sys.setdefaultencoding('utf8')
+elif sys.version_info[0] == 3:
+    unicode = str
 
 # checker model
 model = None
