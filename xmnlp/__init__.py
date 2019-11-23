@@ -27,7 +27,7 @@ if sys.version_info[0] == 2:
     sys.setdefaultencoding('utf8')
 
 __author__ = 'sean lee'
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 
 def load_stopword(fpath):

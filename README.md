@@ -1,11 +1,11 @@
 <p align='center'>/ xmnlp /</p>
 <p align='center'>小明 NLP — 轻量级中文自然语言处理工具</p>
 <p align='center'> A Lightweight Chinese Natural Language Processing Toolkit</p>
-<p align='center'>v 0.2.2</p>
+<p align='center'>v 0.2.3</p>
 
-<p align='center'><strong>R.I.P</strong> 0.2.2版是 xmnlp 最后一个兼容 Python 2.7 的版本</div>
+<p align='center'><strong>R.I.P</strong> 0.2.3版是 xmnlp 最后一个兼容 Python 2.7 的版本</div>
 
-[![pypi](https://img.shields.io/badge/pypi-v0.2.2-blue.svg)](https://pypi.org/project/xmnlp/)
+[![pypi](https://img.shields.io/badge/pypi-v0.2.3-blue.svg)](https://pypi.org/project/xmnlp/)
 ![python version](https://img.shields.io/badge/python-2%2C3-orange.svg)
 ![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg)
 [![GitHub license](https://img.shields.io/github/license/SeanLee97/xmnlp.svg)](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)
