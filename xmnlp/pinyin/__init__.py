@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,36 +5,38 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import unicode_literals
-import sys
-from .pinyin import Pinyin
-from xmnlp.config import path as C_PATH, regx as R
+import re
+import threading
+from typing import List
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
+from xmnlp.pinyin.pinyin import Pinyin
+from xmnlp.config import path as C_PATH
 
+
+zh = re.compile(r"([\u4E00-\u9FA5]+)", flags=re.UNICODE)
+lock = threading.Lock()
 model = None
 
 
 def loader():
     """load model"""
-    global model
-    if model is None:
-        print("(Lazy Load) Loading model...")
-        model = Pinyin()
-        model.load(C_PATH.pinyin['model']['pinyin'])
+    with lock:
+        global model
+        if model is None:
+            print("(Lazy Load) Loading model...")
+            model = Pinyin()
+            model.load(C_PATH.pinyin['model']['pinyin'])
 
 
-def translate(sent):
+def translate(text: str) -> List[str]:
     """translate chinese to pinyin"""
     loader()
     ret = []
-    for s in R.zh.split(sent):
+    for s in zh.split(text):
         s = s.strip()
         if not s:
             continue
-        if R.zh.match(s):
+        if zh.match(s):
             ret += model.translate(s)
         else:
             for word in s.split():

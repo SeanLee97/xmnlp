@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,17 +5,9 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import unicode_literals
-import sys
-import io
 from xmnlp.module import Module
 from xmnlp.utils.trie import Trie
-from xmnlp.utils import safe_input
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    range = xrange
 
 class Pinyin(Module):
     __notsave__ = []
@@ -29,9 +20,8 @@ class Pinyin(Module):
         """train pinyin model"""
 
         for fname in self.filelist(fpath):
-            with io.open(fname, 'r', encoding='utf-8') as f:
+            with open(fname, 'r', encoding='utf-8') as f:
                 for line in f:
-                    line = safe_input(line)
                     words = line.split()
                     self.trie.add(words[0], words[1:])
 

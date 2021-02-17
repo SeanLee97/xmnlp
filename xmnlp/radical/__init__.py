@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,27 +5,28 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import absolute_import, unicode_literals
-import sys
-from xmnlp.config import path as C_PATH
-from .radical import Radical
+import threading
+from typing import List
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
+from xmnlp.config import path as C_PATH
+from xmnlp.radical.radical import Radical
+
 
 model = None
+lock = threading.Lock()
+
 
 def loader():
     """load model"""
-    global model
-    if model is None:
-        print("(Lazy Load) Loading model...")
-        model = Radical()
-        model.load(C_PATH.radical['model']['radical'])
+    with lock:
+        global model
+        if model is None:
+            print("(Lazy Load) Loading model...")
+            model = Radical()
+            model.load(C_PATH.radical['model']['radical'])
 
 
-def radical(text):
+def radical(text: str) -> List[str]:
     """获取偏旁"""
 
     loader()

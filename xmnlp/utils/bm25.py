@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -8,20 +7,14 @@
 #   https://github.com/isnowfy/snownlp       #
 # -------------------------------------------#
 
-from __future__ import absolute_import, unicode_literals
-import sys
+
 from math import log
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    range = xrange
 
-
-class BM25(object):
+class BM25:
     def __init__(self, docs, k1=1.5, b=0.75):
         self.N = len(docs)
-        self.avgdl = sum([len(doc)+0.0 for doc in docs]) / self.N
+        self.avgdl = sum([len(doc) + 0.0 for doc in docs]) / self.N
         self.docs = docs
         self.tf = []
         self.df = {}
@@ -34,7 +27,7 @@ class BM25(object):
         for doc in self.docs:
             tmp = {}
             for word in doc:
-                if not word in tmp:
+                if word not in tmp:
                     tmp[word] = 0
                 tmp[word] += 1
             self.tf.append(tmp)
@@ -43,7 +36,7 @@ class BM25(object):
                     self.df[k] = 0
                 self.df[k] += 1
         for k, v in self.df.items():
-            self.idf[k] = log(self.N-v+0.5)- log(v+0.5)
+            self.idf[k] = log(self.N - v + 0.5) - log(v + 0.5)
 
     def sim(self, doc, idx):
         score = 0
@@ -51,8 +44,7 @@ class BM25(object):
             if word not in self.tf[idx]:
                 continue
             d = len(self.docs[idx])
-            score += (self.idf[word] * self.tf[idx][word] * (self.k1 + 1) \
-                / (self.tf[idx][word] + self.k1*(1 - self.b + self.b * d / self.avgdl)))
+            score += (self.idf[word] * self.tf[idx][word] * (self.k1 + 1) / (self.tf[idx][word] + self.k1*(1 - self.b + self.b * d / self.avgdl)))  # NOQA
         return score
 
     def get_sims(self, doc):
