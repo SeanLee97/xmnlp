@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,36 +5,37 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import absolute_import, unicode_literals
-import sys
-from xmnlp.config import path as C_PATH
-from . import sentiment
+import os
+import threading
+from typing import Tuple
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-
-model = None
-
-def loader():
-    """load model"""
-    global model
-    if model is None:
-        print("(Lazy Load) Loading model...")
-        model = sentiment.Sentiment()
-        model.load(C_PATH.sentiment['model']['sentiment'])
+from xmnlp import config
+from xmnlp.sentiment.sentiment_model import SentimentModel
 
 
-def predict(text, stopword=None):
-    """predict sentiment"""
-
-    loader()
-    return model.predict(text, stopword=stopword)
+sentiment_model = None
+lock = threading.Lock()
 
 
-def load(path):
-    """load model from path"""
+def load_sentiment(reload: bool = False) -> None:
+    with lock:
+        global sentiment_model
+        if sentiment_model is None or reload:
+            if config.MODEL_DIR is None:
+                raise ValueError("Error: 模型地址未设置，请根据文档「安装」 -> 「下载模型」指引下载并配置模型。")
 
-    global model
-    model = sentiment.Sentiment()
-    model.load(path)
+            print('Lazy load sentiment...')
+            sentiment_model = SentimentModel(
+                os.path.join(config.MODEL_DIR, 'sentiment'))
+
+
+def sentiment(doc: str) -> Tuple[float, float]:
+    """ 情感分类
+    Args:
+      doc: str
+    Return:
+      Tuple[float, float], [proba of negative, proba of postive]
+    """
+    load_sentiment()
+    doc = doc.strip()
+    return sentiment_model.predict(doc)

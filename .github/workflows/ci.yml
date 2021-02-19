@@ -16,9 +16,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r dev-requirements.txt
         python setup.py install
-    - name: Test with pytest
+    - name: Lint
       run: |
-        pip install pytest
-        pytest
+        flake8 --config setup.cfg
+    - name: Test
+      run: |
+        pytest --cov tests

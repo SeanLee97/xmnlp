@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,148 +5,236 @@
 # email: xmlee97@gmail.com                   #
 #--------------------------------------------#
 
-from __future__ import absolute_import, unicode_literals
-import io
 import os
-import sys
 import concurrent.futures as futures
 from functools import partial
-from .config import path as C_PATH
-from .config.tag import tag_dict
-from . import postag as _postag
-from . import summary as _summary
-from . import checker as _checker
-from . import sentiment as _sentiment
-from . import pinyin as _pinyin
-from . import radical as _radical
-from .utils import safe_input, filelist
+from typing import (
+    List, Tuple, Generator, Optional, Union, Dict
+)
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
+from xmnlp import config
+from xmnlp import lexical
+from xmnlp import summary
+from xmnlp import checker as _checker
+from xmnlp import sentiment as _sentiment
+from xmnlp import pinyin as _pinyin
+from xmnlp import radical as _radical
+from xmnlp.utils import load_stopword
 
-__author__ = 'sean lee'
+
+__author__ = 'Sean Lee <xmlee97@gmail.com>'
 __version__ = '0.2.3'
 
 
-def load_stopword(fpath):
-    """load stopwords from file """
-    stopwords = set()
-    for fname in filelist(fpath):
-        with io.open(fname, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = safe_input(line)
-                stopwords.add(line)
-    return stopwords
+seg = lexical.seg
+tag = lexical.tag
+ner = lexical.ner
+pinyin = _pinyin.translate
+radical = _radical.radical
+checker = _checker.spellcheck
+sentiment = _sentiment.sentiment
 
 
-ALLOW_POS = ['an', 'i', 'j', 'l', 'n', 'nr', 'ns', 'nt', 'nz', 't', 'v', 'vd', 'vn', 'eng']
-SYS_STOPWORDS = load_stopword(C_PATH.stopword['corpus']['stopword'])
+def set_model(dirname: str) -> None:
+    config.MODEL_DIR = dirname
 
 
-def set_stopword(fpath):
+def set_stopword(fpath: str) -> None:
     """set stopwords from file"""
-    global SYS_STOPWORDS
-    words = load_stopword(fpath)
-    SYS_STOPWORDS = set(words) | SYS_STOPWORDS
+    config.SYS_STOPWORDS = set(load_stopword(fpath)) | config.SYS_STOPWORDS
 
 
-def set_userdict(fpath):
-    """set user dict"""
-    _postag.set_userdict(fpath)
-
-
-def seg(text, hmm=True):
-    """word segmentation"""
-    text = safe_input(text)
-    return _postag.seg(text, hmm)
-
-def seg_parallel(texts, hmm=True, n_jobs=4):
-    """seg texts parallel
+def seg_parallel(texts: List[str], n_jobs: int = 2) -> Generator[List[str], None, None]:
+    """seg parallel
     Args:
-      - hmm: bool, whether to use hmm to detect new words
-      - n_jobs: pool size of multi-process
+      texts: List[str]
+      n_jobs: int, pool size of threads
     Return:
-      generator
+      Generator[List[str]]
     """
-    if not isinstance(texts, (list, tuple)):
-        raise ValueError("You should pass a list or tuple texts")
-    seg_func = partial(seg, hmm=hmm)
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
     with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
-        for words in executor.map(seg_func, texts):
+        for words in executor.map(seg, texts):
             yield words
 
 
-def tag(text, hmm=True):
-    """word tagging"""
-    text = safe_input(text)
-    return _postag.tag(text, hmm)
-
-
-def tag_parallel(texts, hmm=True, n_jobs=4):
-    """tag texts parallel
+def tag_parallel(texts: List[str], n_jobs: int = 2) -> Generator[List[Tuple[str, str]], None, None]:
+    """tag parallel
     Args:
-      - hmm: bool, whether to use hmm to detect new words
-      - n_jobs: pool size of multi-process
+      texts: List[str]
+      n_jobs: int, pool size of threads
     Return:
-      generator
+      Generator[List[Tuple[str, str]]]
     """
-    if not isinstance(texts, (list, tuple)):
-        raise ValueError("You should pass a list or tuple texts")
-    tag_func = partial(tag, hmm=hmm)
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
     with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
-        for ret in executor.map(tag_func, texts):
+        for ret in executor.map(tag, texts):
             yield ret
 
 
-def keyword(text, k=10, stopword=True, allowPOS=None):
-    """extract keyword from text"""
-    if allowPOS is None:
-        allowPOS = ALLOW_POS
-    text = safe_input(text)
-    stopwords = SYS_STOPWORDS if stopword else []
-
-    return _summary.keyword(text, k=k, stopword=stopwords, allowPOS=allowPOS)
-
-
-def keyphrase(text, k=10, stopword=True):
-    """extract keyphrase from text"""
-    text = safe_input(text)
-    stopwords = SYS_STOPWORDS if stopword else []
-    return _summary.keyphrase(text, k=k, stopword=stopwords)
-
-
-def pinyin(text):
-    """get pinyin"""
-
-    text = safe_input(text)
-    return _pinyin.translate(text)
-
-
-def checker(text, level=0):
-    """ text checker 文本纠错
+def ner_parallel(texts: List[str], n_jobs: int = 2) -> Generator[List[Tuple[str, str, int, int]], None, None]:
+    """ner parallel
     Args:
-        level:
-            - 0: word
-            - 1: doc
+      texts: List[str]
+      n_jobs: int, pool size of threads
+    Return:
+      Generator[List[Tuple[str, str]]]
     """
-    text = safe_input(text)
-    return _checker.check(text, level=level)
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(ner, texts):
+            yield ret
 
 
-def sentiment(text, stopword=True):
-    """text sentiment analyse"""
-    text = safe_input(text)
-    stopwords = SYS_STOPWORDS if stopword else []
-    return _sentiment.predict(text, stopword=stopwords)
+def keyword(text: str,
+            k: int = 10,
+            stopword: bool = True,
+            allowPOS: Optional[List[str]] = None) -> List[Tuple[str, float]]:
+    """extract keyword from text
+    Args:
+      text: str
+      k: int, 返回 topk 个关键词
+      stopword: bool, 是否设置停用词
+      allowPOS: Optional[List[str]], 允许的词性，默认为系统自定义的词性列表
+    Return:
+      List[Tuple[str, float]]
+    """
+    if allowPOS is None:
+        allowPOS = config.ALLOW_POS
+    stopwords = config.SYS_STOPWORDS if stopword else []
+
+    return summary.keyword(text, k=k, stopword=stopwords, allowPOS=allowPOS)
 
 
-def radical(text):
-    """get radical from text"""
-    text = safe_input(text)
-    return _radical.radical(text)
+def keyword_parallel(texts: List[str],
+                     k: int = 10,
+                     stopword: bool = True,
+                     allowPOS: Optional[List[str]] = None,
+                     n_jobs: int = 2) -> Generator[List[Tuple[str, float]], None, None]:
+    """keyword parallel
+    Args:
+      texts: List[str]
+      k: int, 返回 topk 个关键词
+      stopword: bool, 是否设置停用词
+      allowPOS: Optional[List[str]], 允许的词性, 默认为系统自定义的词性列表
+      n_jobs: int, pool size of threads
+    Return:
+      List[Tuple[str, float]]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    keyword_func = partial(keyword, k=k, stopword=stopword, allowPOS=allowPOS)
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(keyword_func, texts):
+            yield ret
 
 
-def tag_mean(tag_name):
-    """get meaning of tag"""
-    return tag_dict.get(tag_name, '{} not undefined !'.format(tag_name))
+def keyphrase(text: str,
+              k: int = 10,
+              stopword: bool = False) -> List[str]:
+    """keyphrase extraction
+    Args:
+      text: str
+      k: int, 返回 topk 个关键句
+      stopword: bool, 是否设置停用词
+      allowPOS: Optional[List[str]], 允许的词性, 默认为系统自定义的词性列表
+    Return:
+      List[str]
+    """
+    stopwords = config.SYS_STOPWORDS if stopword else []
+    return summary.keyphrase(text, k=k, stopword=stopwords)
+
+
+def keyphrase_parallel(texts: List[str],
+                       k: int = 10,
+                       stopword: bool = False,
+                       n_jobs: int = 2) -> Generator[List[str], None, None]:
+    """keyphrase parallel
+    Args:
+      texts: List[str]
+      k: int, 返回 topk 个关键句
+      stopword: bool, 是否设置停用词
+      n_jobs: int, pool size of threads
+    Return:
+      List[Tuple[str, float]]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    keyphrase_func = partial(keyphrase, k=k, stopword=stopword)
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(keyphrase_func, texts):
+            yield ret
+
+
+def sentiment_parallel(texts: List[str], n_jobs=2) -> Generator[Tuple[float, float], None, None]:
+    """sentiment parallel
+    Args:
+      texts: List[str]
+      n_jobs: int, pool size of threads
+    Return:
+      Generator[Tuple[float, float], None, None]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(sentiment, texts):
+            yield ret
+
+
+def pinyin_parallel(texts: List[str], n_jobs=2) -> Generator[List[str], None, None]:
+    """pinyin parallel
+    Args:
+      texts: List[str]
+      n_jobs: int, pool size of threads
+    Return:
+      Generator[List[str], None, None]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(pinyin, texts):
+            yield ret
+
+
+def radical_parallel(texts: List[str], n_jobs=2) -> Generator[List[str], None, None]:
+    """radical parallel
+    Args:
+      texts: List[str]
+      n_jobs: int, pool size of threads
+    Return:
+      Generator[List[str], None, None]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(radical, texts):
+            yield ret
+
+
+def checker_parallel(texts: List[str],
+                     suggest: bool = True,
+                     k: int = 5,
+                     max_k: int = 200,
+                     n_jobs: int = 2) -> Generator[
+                        Union[List[Tuple[int, str]],
+                              Dict[Tuple[int, str], List[Tuple[str, float]]]
+                        ], None, None]:
+    """checker parallel
+    Args:
+      texts: List[str]
+      suggest: bool, 是否返回建议词
+      k: int, 返回 topk 个建议词
+      max_k: int, 拼音相同词最大检索次数
+      n_jobs: int, pool size of threads
+    Return:
+      Generator
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    checker_func = partial(checker, suggest=suggest, k=k, max_k=max_k)
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(checker_func, texts):
+            yield ret

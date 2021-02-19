@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,61 +5,60 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import absolute_import, unicode_literals
-import re
-import sys
-from xmnlp import postag
-from .textrank import TextRank, KeywordTextRank
+from typing import List, Tuple, Optional
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    range = xrange
+import xmnlp
+from xmnlp.summary.textrank import TextRank, KeywordTextRank
+from xmnlp.utils import split_text
 
 
-def keyword(text, k=10, stopword=None, allowPOS=None):
-    """extract keyword from text"""
+def keyword(text: str,
+            k: int = 10,
+            stopword: Optional[List[str]] = None,
+            allowPOS: Optional[List[str]] = None) -> List[Tuple[str, float]]:
+    """关键词抽取
+    Args:
+      text: str, 输入文本
+      k: int, 返回 topk 个关键词
+      stopword: List[str], 关键词列表，默认 None
+      allowPos: List[str], 允许的词性
+    Return:
+      List[Tuple[str, float]], e.g., [('word', weight), ...]
+    """
+    text = text.strip()
     if stopword is None:
         stopword = []
     if allowPOS is None:
         allowPOS = []
     words = []
-    for word, tag in postag.tag(text):
-        if word not in stopword:
-            if allowPOS is not None:
-                if tag in allowPOS:
-                    words.append(word)
-            else:
-                words.append(word)
+    for ret in xmnlp.tag_parallel(split_text(text)):
+        for w, t in ret:
+            if w not in stopword and t in allowPOS:
+                words.append(w)
 
     words = KeywordTextRank(words)
     return words.topk(k)
 
 
-def keyphrase(text, k=10, stopword=None):
-    """extract keyphrase from text"""
-    def get_sents(doc):
-        re_line_skip = re.compile('[\r\n]')
-        re_delimiter = re.compile('[，。？！；]')
-        sents = []
-        for line in re_line_skip.split(doc):
-            line = line.strip()
-            if not line:
-                continue
-            for sent in re_delimiter.split(line):
-                sent = sent.strip()
-                if not sent:
-                    continue
-                sents.append(sent)
-        return sents
-
+def keyphrase(text: str,
+              k: int = 10,
+              stopword: Optional[List[str]] = None) -> List[str]:
+    """关键句抽取
+    Args:
+      text: str, 输入文本
+      k: int, 返回 topk 个关键词
+      stopword: List[str], 关键词列表，默认 None
+    Return:
+      List[str]
+    """
+    text = text.strip()
     if stopword is None:
         stopword = []
-    sents = get_sents(text)
+
     docs = []
-    for sent in sents:
+    for sent in split_text(text):
         words = []
-        for word, _ in postag.tag(sent):
+        for word, _ in xmnlp.tag(sent):
             if word not in stopword:
                 words.append(word)
         docs.append(words)
@@ -68,6 +66,6 @@ def keyphrase(text, k=10, stopword=None):
     tr = TextRank(docs)
     res = []
     for idx in tr.topk(k):
-        res.append(docs[idx])
-    
+        res.append(''.join(docs[idx]))
+
     return res

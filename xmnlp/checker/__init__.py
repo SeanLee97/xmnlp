@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,45 +5,37 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import absolute_import, unicode_literals
-import sys
-from xmnlp.config import path as C_PATH
-from xmnlp.config import regx as R
-from xmnlp.postag import seg
-from .checker import Checker
+import os
+import threading
+from typing import Union, List, Tuple, Dict
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-elif sys.version_info[0] == 3:
-    unicode = str
+from xmnlp import config
+from xmnlp.checker.checker import CheckerDecoder
 
-# checker model
-model = None
 
-def loader():
-    """load model"""
-    global model
-    if model is None:
-        print("(Lazy Load) Loading model...")
-        model = Checker()
+lock = threading.Lock()
+checker = None
 
-def set_userdict(fpath):
-    """set user dict"""
-    loader()
-    model.userdict(fpath)
 
-def check(doc, level=0):
-    """check doc
+def load_checker(reload: bool = False) -> None:
+    with lock:
+        global checker
+        if checker is None or reload:
+            if config.MODEL_DIR is None:
+                raise ValueError("Error: 模型地址未设置，请根据文档「安装」 -> 「下载模型」指引下载并配置模型。")
 
-    Args:
-      level:
-        - 0: word
-        - 1: doc
+            print('Lazy load checker...')
+            checker = CheckerDecoder(
+                os.path.join(config.MODEL_DIR, 'checker'))
+
+
+def spellcheck(text: str,
+               suggest: bool = True,
+               k: int = 5,
+               max_k: int = 200) -> Union[
+                   List[Tuple[int, str]],
+                   Dict[Tuple[int, str], List[Tuple[str, float]]]]:
+    """spell check
     """
-    loader()
-    if isinstance(doc, (str, unicode)):
-        if level == 0:
-            return model.best_match(doc)
-        return model.doc_checker(doc)
-    raise ValueError('Error [Chekcer]: invalid input type, str is required!')
+    load_checker()
+    return checker.predict(text, suggest=suggest, k=k, max_k=max_k)

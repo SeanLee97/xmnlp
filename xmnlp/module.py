@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,22 +5,12 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import absolute_import, unicode_literals
-
 import os
 import bz2
-import sys
-
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    range = xrange
-    import cPickle as pickle
-else:
-    import pickle
+import pickle
 
 
-class Module(object):
+class Module:
     __notsave__ = []
     __onlysave__ = []
 
@@ -52,8 +41,6 @@ class Module(object):
             else:
                 d[k] = v
 
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
         if not iszip:
             with open(fname, 'wb') as wf:
                 pickle.dump(d, wf, True)
@@ -64,8 +51,6 @@ class Module(object):
 
     def load(self, fname, iszip=True):
         """load model"""
-        if sys.version_info[0] == 3:
-            fname = fname + '.3'
         if not iszip:
             d = pickle.load(open(fname, 'rb'))
         else:

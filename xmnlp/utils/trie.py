@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------#
@@ -6,23 +5,15 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
-from __future__ import unicode_literals
-import sys
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    range = xrange
-
-
-class Trie(object):
+class Trie:
     def __init__(self):
         self.root = {}
 
     def add(self, key, val):
         curr = self.root
         for k in key:
-            if not k in curr:
+            if k not in curr:
                 curr[k] = {}
             curr = curr[k]
         curr['val'] = val
@@ -36,7 +27,7 @@ class Trie(object):
             else:
                 return ret
             if 'val' in curr:
-                ret = (sent[start:pos+1], curr['val'])
+                ret = (sent[start: pos + 1], curr['val'])
             else:
                 lst = list(curr)
                 if lst:
@@ -51,7 +42,7 @@ class Trie(object):
                             cands[py] += 1
                     cands = sorted(cands.items(), key=lambda x: x[1], reverse=True)
                     if cands:
-                        ret = (sent[start:pos+1], cands[0][0])
+                        ret = (sent[start: pos + 1], cands[0][0])
         return ret
 
     def get(self, sent):

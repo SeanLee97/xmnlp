@@ -1,206 +1,111 @@
-# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# -------------------------------------------#
-# author: sean lee                           #
-# email: xmlee97@gmail.com                   #
-# -------------------------------------------#
+""" XMNLP - Spell Checker
 
-from __future__ import absolute_import, unicode_literals
-import io
-import sys
-from xmnlp.utils import safe_input, filelist
-from xmnlp.config import path as C_PATH
+Model Tree:
 
-if sys.version_info[0] == 2:
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    range = xrange
+checker
+├── corrector
+│   ├── saved_model.pb
+│   └── variables
+│       ├── variables.data-00000-of-00001
+│       └── variables.index
+├── detector
+│   ├── saved_model.pb
+│   └── variables
+│       ├── variables.data-00000-of-00001
+│       └── variables.index
+└── vocab.tx
 
-class Checker(object):
+"""
 
-    """
-    Args:
-        max_edit_distance:
-        verbose:
-            - 0  return best guession
-            - 1  all guessions of smallest edit distance
-            - 2  all guessions <= max_edit_distance
-    """
-    def __init__(self, max_edit_distance=2, verbose=0):
-        self.max_edit_distance = max_edit_distance
-        self.verbose = verbose
-        self.dict = {}
-        self.longest_length = 0
+import os
 
-        self.train(C_PATH.checker['corpus']['checker'])
+import numpy as np
+import tensorflow as tf
+from tokenizers import BertWordPieceTokenizer
 
-    def userdict(self, fpath):
-        """set user dictionary"""
+import xmnlp
+from xmnlp.utils import rematch, topK
 
-        print("loading...")
-        self.train(fpath)
 
-    def load_data(self, fpath):
-        """load data from file"""
+MAX_LEN = 512
 
-        for fname in filelist(fpath):
-            with io.open(fname, 'r', encoding='utf-8') as f:
-                for line in f:
-                    line = line.strip()
-                    arr = line.split()
-                    if arr:
-                        yield safe_input(arr[0])
 
-    def train(self, fname):
-        """build dictionary"""
+class DetectorModel:
+    def __init__(self, model_dir):
+        # load session and graph
+        self.sess = tf.Session(graph=tf.Graph())
+        tf.saved_model.loader.load(self.sess, ['serve'], export_dir=model_dir)
 
-        print("start to build dictionary...")
-        for word in self.load_data(fname):
-            if word in self.dict:
-                self.dict[word] = (self.dict[word][0], self.dict[word][1] + 1)
-            else:
-                self.dict[word] = ([], 1)
-                self.longest_length = max(self.longest_length, len(word))
+    def predict(self, token_ids, segment_ids):
+        # placeholder
+        input_token = self.sess.graph.get_tensor_by_name('Input-Token:0')
+        input_segment = self.sess.graph.get_tensor_by_name('Input-Segment:0')
+        output = self.sess.graph.get_tensor_by_name('labels/Sigmoid:0')
 
-            if self.dict[word][1] == 1:
-                # first show of word in corpus
-                deletes = self.get_deletes(word)
-                for d in deletes:
-                    if d in self.dict:
-                        self.dict[d][0].append(word)
-                    else:
-                        self.dict[d] = ([word], 0)
-        print("done !")
+        return self.sess.run([output], feed_dict={input_token: token_ids,
+                                                  input_segment: segment_ids})
 
-    def get_deletes(self, word):
-        """get delete word"""
-        dels = []
-        queue = [word]
-        for _ in range(self.max_edit_distance):
-            tmp = []
-            for word in queue:
-                if len(word) > 1:
-                    for i in range(len(word)):
-                        except_char = word[:i] + word[i+1:]
-                        if except_char not in dels:
-                            dels.append(except_char)
-                        if except_char not in tmp:
-                            tmp.append(except_char)
-            queue = tmp
-        return dels
 
-    def edit_distance(self, seq1, seq2):
-        """implement of dameraulevenshtein"""
-        m, n = len(seq1), len(seq2)
-        prev = None
-        cnt = list(range(1, n + 1)) + [0]
-        for i in range(m):
-            pprev, prev, cnt = prev, cnt, [0]*n + [i+1]
-            for j in range(n):
-                cnt[j] = min(prev[j] + 1, cnt[j-1]+1, prev[j-1]+(seq1[i] != seq2[j]))
-                if (i > 0 and j > 0 and seq1[i] == seq2[j-1] and
-                        seq1[i-1] == seq2[j] and seq1[i] != seq2[j]):
-                    cnt[j] = min(cnt[j], pprev[j-2]+1)
-        return cnt[n-1]
+class CorrectorModel:
+    def __init__(self, model_dir):
+        # load session and graph
+        self.sess = tf.Session(graph=tf.Graph())
+        tf.saved_model.loader.load(self.sess, ['serve'], export_dir=model_dir)
 
-    def best_match(self, word):
-        """get best match word"""
+    def predict(self, token_ids, segment_ids):
+        # placeholder
+        input_token = self.sess.graph.get_tensor_by_name('Input-Token:0')
+        input_segment = self.sess.graph.get_tensor_by_name('Input-Segment:0')
+        output = self.sess.graph.get_tensor_by_name('MLM-Activation/truediv:0')
 
-        return self.word_checker(word)[0]
+        return self.sess.run([output], feed_dict={input_token: token_ids,
+                                                  input_segment: segment_ids})
 
-    def word_checker(self, word):
-        """check word-level"""
 
-        if len(word) - self.longest_length > self.max_edit_distance or not word.strip():
-            return None
-        min_guess_len = float('inf')
-        queue = [word]
-        guess_dict, tmp_dict = {}, {}
-        while queue:
-            # queue pop
-            cnt = queue[0]
-            queue = queue[1:]
-            if (self.verbose < 2 and guess_dict and
-                    len(word) - len(cnt) > min_guess_len):
-                break
-            if cnt in self.dict and cnt not in guess_dict:
-                if self.dict[cnt][1] > 0:
-                    guess_dict[cnt] = (self.dict[cnt][1], len(word) - len(cnt))
-                    if self.verbose < 2 and len(word) == len(cnt):
-                        break
-                    elif len(word) - len(cnt) < min_guess_len:
-                        min_guess_len = len(word) - len(cnt)
-                for sc_item in self.dict[cnt][0]:
-                    if sc_item not in guess_dict:
-                        if len(cnt) == len(word):
-                            item_dist = len(sc_item) - len(cnt)
-                        item_dist = self.edit_distance(sc_item, word)
-                        if self.verbose < 2 and item_dist > min_guess_len:
-                            pass
-                        elif item_dist <= self.max_edit_distance:
-                            guess_dict[sc_item] = (self.dict[sc_item][1], item_dist)
-                            if item_dist < min_guess_len:
-                                min_guess_len = item_dist
-                        if self.verbose < 2:
-                            guess_dict = {k:v for k, v in guess_dict.items()
-                                          if v[1] <= min_guess_len}
-            if self.verbose < 2 and len(word) - len(cnt) > min_guess_len:
-                pass
-            elif len(word) - len(cnt) < self.max_edit_distance and len(cnt) > 1:
-                for i in range(len(cnt)):
-                    # character index
-                    except_char = cnt[:i] + cnt[i+1:]
-                    if except_char not in tmp_dict:
-                        queue.append(except_char)
-                        tmp_dict[except_char] = None
-        guess_list = guess_dict.items()
-        ret = sorted(guess_list, key=lambda x: (x[1][0], -x[1][1]))
-        if self.verbose == 0:
-            try:
-                return ret[0]
-            except:
-                return None
-        else:
+class CheckerDecoder:
+    def __init__(self, model_dir):
+        self.detector = DetectorModel(os.path.join(model_dir, 'detector'))
+        self.corrector = CorrectorModel(os.path.join(model_dir, 'corrector'))
+        self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'))
+        mask_id = self.tokenizer.encode('[MASK]').ids[1:-1]
+        assert len(mask_id) == 1
+        self.mask_id = mask_id[0]
+
+    def predict(self, text, suggest=False, k=5, max_k=200):
+        tokenized = self.tokenizer.encode(text)
+        if len(tokenized.tokens) > MAX_LEN:
+            raise ValueError('The text is too long (>512) to process')
+        token_ids = tokenized.ids
+        segment_ids = tokenized.type_ids
+        mapping = rematch(tokenized.offsets)
+        token_ids, segment_ids = np.array([token_ids]), np.array([segment_ids])
+        probas = self.detector.predict(token_ids, segment_ids)[0][0]
+        incorrect_ids = np.where(probas > 0.5)[0]
+        token_ids[0, incorrect_ids] = self.mask_id
+
+        if not suggest:
+            ret = []
+            for i in incorrect_ids:
+                ret.append((i - 1, tokenized.tokens[i]))
             return ret
 
-    def doc_checker(self, doc):
-        """check document-level"""
-
-        if len(doc) < 2:
-            return [doc]
-
-        cands = []
-        cnt = doc[0]
-        appear_times = 0
-        for ch in doc[1:]:
-            cnt += ch
-            suggestion = self.best_match(cnt)
-
-            if cands and suggestion == cands[-1]:
-                appear_times += 1
-            else:
-                appear_times = 0
-            if appear_times > 1:
-                cnt = ch
-                appear_times = 0
+        probas = self.corrector.predict(token_ids, segment_ids)[0][0]
+        sorted_probas, sort_indexs = topK(probas, max_k)
+        ret = {}
+        for i in incorrect_ids:
+            if i == 0 or i == len(tokenized.tokens) - 1:
                 continue
-            if suggestion is not None:
-                cands.append(suggestion)
-            else:
-                cands.append(ch)
-            if len(cnt) > self.longest_length:
-                cnt = ch
-
-        cands = list(dict.fromkeys(cands))
-        n = len(cands)
-        i = 1
-        while i < n:
-            if cands[i-1] in cands[i]:
-                cands.remove(cands[i-1])
-                n = len(cands)
-                i -= 2
-            i += 1
-            if len(cands) == 1:
-                break
-        return cands
+            current_token = text[mapping[i][0]: mapping[i][-1] + 1]
+            current_pinyin = ' '.join(xmnlp.pinyin(current_token))
+            cands = []
+            for proba, token in zip(sorted_probas[i], self.tokenizer.decode(sort_indexs[i]).split()):
+                pinyin = ' '.join(xmnlp.pinyin(token))
+                score = 0
+                if current_pinyin == pinyin:
+                    score = 1
+                cands.append((token, proba + score))
+            cands.sort(key=lambda x: x[1], reverse=True)
+            ret[(i - 1, current_token)] = cands[:k]
+        return dict(ret)
