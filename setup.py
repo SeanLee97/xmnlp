@@ -26,6 +26,7 @@ setup(
     name='xmnlp',
     version=__version__,
     description='A Lightweight Chinese Natural Language Processing Toolkit',
+    long_description_content_type="text/markdown",
     long_description=long_description,
     keywords='chinese segmentation,chinese postager,chinese spell check,pinyin,chinese radical',
     author='sean lee',
