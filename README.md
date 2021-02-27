@@ -118,7 +118,7 @@ python setup.py install
 
 | 模型名称 | 适用版本 | 下载地址 |
 | --- | --- | --- |
-| xmnlp-models-v3.zip | v0.3.0 | [飞书](https://wao3cag89c.feishu.cn/file/boxcn7uqJAJ39ceYJrbQcok7Uwd) \[8eoo\] \| [百度网盘](https://pan.baidu.com/s/1c97Lca5k_r6FWOwGt528sw) \[gvq3\] |
+| xmnlp-models-v3.zip | v0.3.0, v0.3.1 | [飞书](https://wao3cag89c.feishu.cn/file/boxcn7uqJAJ39ceYJrbQcok7Uwd) \[8eoo\] \| [百度网盘](https://pan.baidu.com/s/1c97Lca5k_r6FWOwGt528sw) \[gvq3\] |
 
 
 <br />* 如果下载地址失效了，烦请提 issue 反馈<br />
