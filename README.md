@@ -11,7 +11,7 @@
 [![pypi](https://img.shields.io/pypi/v/xmnlp?style=for-the-badge)](https://pypi.org/project/xmnlp/)
 [![pypi downloads](https://img.shields.io/pypi/dm/xmnlp?style=for-the-badge)](https://pypi.org/project/xmnlp/)
 [![python version](https://img.shields.io/badge/python-3.6,3.7,3.8-orange.svg?style=for-the-badge)]()
-[![tensorflow version](https://img.shields.io/badge/tensorflow-1.13,1.14,1.15-orange.svg?style=for-the-badge)]()
+[![tensorflow version](https://img.shields.io/badge/tensorflow-1.14+,2.x-orange.svg?style=for-the-badge)]()
 [![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg?style=for-the-badge)]()
 [![GitHub license](https://img.shields.io/github/license/SeanLee97/xmnlp?style=for-the-badge)](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)
 
@@ -47,7 +47,7 @@
   - [并行分词：seg_parallel](#usage-seg_parallel)
   - [词性标注：tag](#usage-tag)
   - [并行词性标注：tag_parallel](#usage-tag_parallel)
-  - [命名体识别:ner](#usage-ner)
+  - [命名体识别：ner](#usage-ner)
   - [并行命名体识别：ner_parallel](#usage-ner_parallel)
   - [关键词提取：keyword](#usage-keyword)
   - [并行关键词提取：keyword_parallel](#usage-keyword_parallel)
