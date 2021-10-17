@@ -11,51 +11,38 @@ Model Tree:
 
 lexical
 ├── label2id.json
-├── saved_model.pb
+├── lexical.onnx
 ├── trans.npy
-├── variables
-│   ├── variables.data-00000-of-00001
-│   └── variables.index
 └── vocab.txt
 """
 
 import os
 import json
+from typing import List, Tuple
 
 import numpy as np
-try:
-    import tensorflow.compat.v1 as tf
-except ImportError:
-    import tensorflow as tf
 from tokenizers import BertWordPieceTokenizer
 
+from xmnlp.base_model import BaseModel
 from xmnlp.utils import rematch
 
 
 MAX_LEN = 512
 
 
-class LexicalModel:
-    def __init__(self, model_dir):
-        # load session and graph
-        self.sess = tf.Session(graph=tf.Graph())
-        tf.saved_model.loader.load(self.sess, ['serve'], export_dir=model_dir)
-
-    def predict(self, token_ids, segment_ids):
-        # placeholder
-        input_token = self.sess.graph.get_tensor_by_name('Input-Token:0')
-        input_segment = self.sess.graph.get_tensor_by_name('Input-Segment:0')
-        output = self.sess.graph.get_tensor_by_name('crf/sub_1:0')
-
-        return self.sess.run([output], feed_dict={input_token: token_ids,
-                                                  input_segment: segment_ids})
+class LexicalModel(BaseModel):
+    def predict(self, token_ids: np.ndarray, segment_ids: np.ndarray) -> np.ndarray:
+        token_ids = token_ids.astype('float32')
+        segment_ids = segment_ids.astype('float32')
+        return self.sess.run(['crf/sub_1:0'], {'Input-Token:0': token_ids,
+                                               'Input-Segment:0': segment_ids})
 
 
 class LexicalDecoder:
     def __init__(self, model_dir, starts=None, ends=None):
         self.trans = np.load(os.path.join(model_dir, 'trans.npy'))
         self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'))
-        self.lexical_model = LexicalModel(os.path.join(model_dir))
+        self.lexical_model = LexicalModel(os.path.join(model_dir, 'lexical.onnx'))
         with open(os.path.join(model_dir, 'label2id.json'), encoding='utf-8') as reader:
             label2id = json.load(reader)
             self.id2label = {int(v): k for k, v in label2id.items()}
@@ -93,7 +80,7 @@ class LexicalDecoder:
         # 最优路径
         return paths[:, scores[:, 0].argmax()]
 
-    def predict(self, text):
+    def predict(self, text: str) -> List[Tuple[str, str]]:
         tokenized = self.tokenizer.encode(text)
         if len(tokenized.tokens) > MAX_LEN:
             raise ValueError('The text is too long (>512) to process')

@@ -5,16 +5,8 @@
 Model Tree:
 
 checker
-├── corrector
-│   ├── saved_model.pb
-│   └── variables
-│       ├── variables.data-00000-of-00001
-│       └── variables.index
-├── detector
-│   ├── saved_model.pb
-│   └── variables
-│       ├── variables.data-00000-of-00001
-│       └── variables.index
+├── corrector.onnx
+├── detector.onnx
 └── vocab.tx
 
 """
@@ -22,55 +14,37 @@ checker
 import os
 
 import numpy as np
-try:
-    import tensorflow.compat.v1 as tf
-except ImportError:
-    import tensorflow as tf
 from tokenizers import BertWordPieceTokenizer
 
 import xmnlp
 from xmnlp.utils import rematch, topK
+from xmnlp.base_model import BaseModel
 
 
 MAX_LEN = 512
 
 
-class DetectorModel:
-    def __init__(self, model_dir):
-        # load session and graph
-        self.sess = tf.Session(graph=tf.Graph())
-        tf.saved_model.loader.load(self.sess, ['serve'], export_dir=model_dir)
+class DetectorModel(BaseModel):
+    def predict(self, token_ids: np.ndarray, segment_ids: np.ndarray) -> np.ndarray:
+        token_ids = token_ids.astype('float32')
+        segment_ids = segment_ids.astype('float32')
 
-    def predict(self, token_ids, segment_ids):
-        # placeholder
-        input_token = self.sess.graph.get_tensor_by_name('Input-Token:0')
-        input_segment = self.sess.graph.get_tensor_by_name('Input-Segment:0')
-        output = self.sess.graph.get_tensor_by_name('labels/Sigmoid:0')
-
-        return self.sess.run([output], feed_dict={input_token: token_ids,
-                                                  input_segment: segment_ids})
+        return self.sess.run(['labels/Sigmoid:0'], {'Input-Token:0': token_ids,
+                                                    'Input-Segment:0': segment_ids})
 
 
-class CorrectorModel:
-    def __init__(self, model_dir):
-        # load session and graph
-        self.sess = tf.Session(graph=tf.Graph())
-        tf.saved_model.loader.load(self.sess, ['serve'], export_dir=model_dir)
-
-    def predict(self, token_ids, segment_ids):
-        # placeholder
-        input_token = self.sess.graph.get_tensor_by_name('Input-Token:0')
-        input_segment = self.sess.graph.get_tensor_by_name('Input-Segment:0')
-        output = self.sess.graph.get_tensor_by_name('MLM-Activation/truediv:0')
-
-        return self.sess.run([output], feed_dict={input_token: token_ids,
-                                                  input_segment: segment_ids})
+class CorrectorModel(BaseModel):
+    def predict(self, token_ids: np.ndarray, segment_ids: np.ndarray) -> np.ndarray:
+        token_ids = token_ids.astype('float32')
+        segment_ids = segment_ids.astype('float32')
+        return self.sess.run(['MLM-Activation/truediv:0'], {'Input-Token:0': token_ids,
+                                                            'Input-Segment:0': segment_ids})
 
 
 class CheckerDecoder:
     def __init__(self, model_dir):
-        self.detector = DetectorModel(os.path.join(model_dir, 'detector'))
-        self.corrector = CorrectorModel(os.path.join(model_dir, 'corrector'))
+        self.detector = DetectorModel(os.path.join(model_dir, 'detector.onnx'))
+        self.corrector = CorrectorModel(os.path.join(model_dir, 'corrector.onnx'))
         self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'))
         mask_id = self.tokenizer.encode('[MASK]').ids[1:-1]
         assert len(mask_id) == 1
