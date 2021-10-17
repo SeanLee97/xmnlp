@@ -10,7 +10,7 @@ import os
 from setuptools import setup, find_packages
 
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 
 long_description = open('README.md', encoding='utf-8').read()
