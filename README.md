@@ -11,7 +11,7 @@
 [![pypi](https://img.shields.io/pypi/v/xmnlp?style=for-the-badge)](https://pypi.org/project/xmnlp/)
 [![pypi downloads](https://img.shields.io/pypi/dm/xmnlp?style=for-the-badge)](https://pypi.org/project/xmnlp/)
 [![python version](https://img.shields.io/badge/python-3.6,3.7,3.8-orange.svg?style=for-the-badge)]()
-[![tensorflow version](https://img.shields.io/badge/tensorflow-1.14+,2.x-orange.svg?style=for-the-badge)]()
+[![onnx](https://img.shields.io/badge/onnx,onnxruntime-orange.svg?style=for-the-badge)]()
 [![support os](https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-yellow.svg?style=for-the-badge)]()
 [![GitHub license](https://img.shields.io/github/license/SeanLee97/xmnlp?style=for-the-badge)](https://github.com/SeanLee97/xmnlp/blob/master/LICENSE)
 
@@ -118,7 +118,7 @@ python setup.py install
 
 | 模型名称 | 适用版本 | 下载地址 |
 | --- | --- | --- |
-| xmnlp-models-v3.zip | v0.3.0, v0.3.1 | [飞书](https://wao3cag89c.feishu.cn/file/boxcn7uqJAJ39ceYJrbQcok7Uwd) \[8eoo\] \| [百度网盘](https://pan.baidu.com/s/1c97Lca5k_r6FWOwGt528sw) \[gvq3\] |
+| xmnlp-onnx-models-v3.zip | v0.3.0, v0.3.1 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnG5OVqqM8kxtQilt5DachE2) \[o4bA\] \| [百度网盘](https://pan.baidu.com/s/1DsIec7W5CEJ8UNInezgm0Q) \[9g7e\] |
 
 
 <br />* 如果下载地址失效了，烦请提 issue 反馈<br />
