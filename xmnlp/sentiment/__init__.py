@@ -10,7 +10,7 @@ import threading
 from typing import Tuple
 
 from xmnlp import config
-from xmnlp.sentiment.sentiment_model import SentimentModel
+from xmnlp.sentiment.sentiment_model import Sentiment
 
 
 sentiment_model = None
@@ -25,7 +25,7 @@ def load_sentiment(reload: bool = False) -> None:
                 raise ValueError("Error: 模型地址未设置，请根据文档「安装」 -> 「下载模型」指引下载并配置模型。")
 
             print('Lazy load sentiment...')
-            sentiment_model = SentimentModel(
+            sentiment_model = Sentiment(
                 os.path.join(config.MODEL_DIR, 'sentiment'))
 
 

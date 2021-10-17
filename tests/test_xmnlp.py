@@ -9,8 +9,6 @@ import pytest
 import xmnlp
 
 
-xmnlp.set_model('/Users/seanlee/Workspace/xmnlp-models/')
-
 @pytest.fixture
 def lexical_data():
     return ['结婚的和尚未结婚的都成了和尚',
