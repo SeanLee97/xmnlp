@@ -122,7 +122,7 @@ python setup.py install
 
 \* 模型已切换至 onnx， 先前 tensorflow 模型已不可用，请下载最新版本模型
 
-<br />* 如果下载地址失效了，烦请提 issue 反馈<br />
+\* 如果下载地址失效了，烦请提 issue 反馈<br />
 
 <a name="installation-download-setting"></a>
 #### 模型设置
