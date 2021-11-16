@@ -118,7 +118,7 @@ python setup.py install
 
 | 模型名称 | 适用版本 | 下载地址 |
 | --- | --- | --- |
-| xmnlp-onnx-models-v3.zip | v0.3.2 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnG5OVqqM8kxtQilt5DachE2) \[o4bA\] \| [百度网盘](https://pan.baidu.com/s/1DsIec7W5CEJ8UNInezgm0Q) \[9g7e\] |
+| xmnlp-onnx-models-v3.zip | v0.3.2, v0.3.3 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnG5OVqqM8kxtQilt5DachE2) \[o4bA\] \| [百度网盘](https://pan.baidu.com/s/1DsIec7W5CEJ8UNInezgm0Q) \[9g7e\] |
 
 \* 模型已切换至 onnx， 先前 tensorflow 模型已不可用，请下载最新版本模型
 
