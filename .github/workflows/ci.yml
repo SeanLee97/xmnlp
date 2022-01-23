@@ -21,6 +21,3 @@ jobs:
     - name: Lint
       run: |
         flake8 --config setup.cfg
-    - name: Test
-      run: |
-        pytest --cov tests
