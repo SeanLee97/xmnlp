@@ -23,7 +23,7 @@ from xmnlp.utils import load_stopword
 
 
 __author__ = 'Sean Lee <xmlee97@gmail.com>'
-__version__ = '0.3.3'
+__version__ = '0.4.0'
 
 
 seg = lexical.seg
