@@ -35,7 +35,7 @@ class Sentiment:
     def __init__(self, model_dir: str):
         # load session and graph
         self.sentiment_model = SentimentModel(os.path.join(model_dir, 'sentiment.onnx'))
-        self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'))
+        self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'), lowercase=True)
         self.tokenizer.enable_truncation(max_length=MAX_LEN)
 
     def predict(self, text: str) -> Tuple[float, float]:
