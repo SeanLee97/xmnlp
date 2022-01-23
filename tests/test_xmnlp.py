@@ -132,3 +132,34 @@ def test_checker():
 def test_checker_parallel():
     ret = list(xmnlp.checker_parallel(['说自己市提前两天排对的。', '等啊等，忠于等到了'], suggest=False))
     assert ret == [[(3, '市'), (9, '对')], [(4, '忠')]]
+
+
+def test_sentence_vector():
+    import numpy as np
+    from xmnlp.sv import SentenceVector
+
+    query = '我想买手机'
+    docs = [
+        '我想买苹果手机',
+        '我喜欢吃苹果'
+    ]
+
+    sv = SentenceVector()
+    assert isinstance(sv.similarity(query, docs[0]), np.float32)
+    print(sv.most_similar(query, docs))
+    assert isinstance(sv.most_similar(query, docs), list)
+
+    sv = SentenceVector(genre='通用')
+    assert isinstance(sv.similarity(query, docs[0]), np.float32)
+    print(sv.most_similar(query, docs))
+    assert isinstance(sv.most_similar(query, docs), list)
+
+    sv = SentenceVector(genre='金融')
+    assert isinstance(sv.similarity(query, docs[0]), np.float32)
+    print(sv.most_similar(query, docs))
+    assert isinstance(sv.most_similar(query, docs), list)
+
+    sv = SentenceVector(genre='国际')
+    assert isinstance(sv.similarity(query, docs[0]), np.float32)
+    print(sv.most_similar(query, docs))
+    assert isinstance(sv.most_similar(query, docs), list)

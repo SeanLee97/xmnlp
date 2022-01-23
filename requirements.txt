@@ -1,3 +1,4 @@
 tokenizers
+scikit-learn
 numpy
 onnxruntime
