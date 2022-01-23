@@ -38,6 +38,12 @@ class SentenceVector:
                  model_dir: Optional[str] = None,
                  genre: str = '通用',
                  max_length: int = 512):
+        """
+        Args:
+          model_dir: Optional[str], model dir, default None
+          genre: str, 内容类型，默认通用，目前支持 ['通用', '金融', '国际'] 三种
+          max_length: int, 输入文本的最大长度，默认 512
+        """
         assert genre in config.ALLOW_SV_GENRES
         self.genre = genre
         # load session and graph
@@ -71,6 +77,13 @@ class SentenceVector:
                      docs: List[str],
                      k: int = 1,
                      **kwargs) -> List[Tuple[str, float]]:
+        """ get most similar docs
+        Args:
+          query: str, query sentence
+          docs: List[str], a bunch of sentences
+          k: int, return size
+          kwargs: other parameters of KDTree
+        """
         # build tree
         vecs = np.concatenate([np.reshape(self.transform(doc), (1, -1)) for doc in docs], axis=0)
         tree = KDTree(vecs, **kwargs)
