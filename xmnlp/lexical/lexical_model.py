@@ -41,7 +41,7 @@ class LexicalModel(BaseModel):
 class LexicalDecoder:
     def __init__(self, model_dir, starts=None, ends=None):
         self.trans = np.load(os.path.join(model_dir, 'trans.npy'))
-        self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'))
+        self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'), lowercase=True)
         self.lexical_model = LexicalModel(os.path.join(model_dir, 'lexical.onnx'))
         with open(os.path.join(model_dir, 'label2id.json'), encoding='utf-8') as reader:
             label2id = json.load(reader)

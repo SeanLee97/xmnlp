@@ -11,3 +11,5 @@ MODEL_DIR = os.getenv('XMNLP_MODEL', None)
 ALLOW_POS = ['an', 'i', 'j', 'l', 'n', 'nr', 'ns', 'nt', 'nz',
              't', 'v', 'vd', 'vn', 'x', 'nn', 'g']
 SYS_STOPWORDS = load_stopword(path.stopword['corpus']['stopword'])
+# allow sentence vector genres
+ALLOW_SV_GENRES = ['通用', '金融', '国际']

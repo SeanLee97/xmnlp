@@ -34,6 +34,7 @@
 - 情感分析 (RoBERTa finetune)
 - 文本转拼音 (Trie)
 - 汉字偏旁部首 (HashMap)
+- 句子表征及相似度计算
 
 
 <a name="outline"></a>
@@ -61,6 +62,7 @@
   - [并行部首提取：radical_parallel](#usage-radical_parallel)
   - [文本纠错：checker](#usage-checker)
   - [并行文本纠错：checker_parallel](#usage-checker_parallel)
+  - [句子表征及相似度计算：sentence_vector](#usage-sentence_vector)
 - [三. 更多](#more)
   - [贡献者](#more-contribution)
   - [学术引用](#more-citation)
@@ -118,6 +120,7 @@ python setup.py install
 
 | 模型名称 | 适用版本 | 下载地址 |
 | --- | --- | --- |
+| xmnlp-onnx-models-v4.zip | v0.4.0 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnwdZ9PTtCurhkddlsXrIr0c) \[DKLa\] \| [百度网盘](https://pan.baidu.com/s/1qIHDwXJv18AAv0w72FzrjQ) \[j1qi\] |
 | xmnlp-onnx-models-v3.zip | v0.3.2, v0.3.3 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnG5OVqqM8kxtQilt5DachE2) \[o4bA\] \| [百度网盘](https://pan.baidu.com/s/1DsIec7W5CEJ8UNInezgm0Q) \[9g7e\] |
 
 \* 模型已切换至 onnx， 先前 tensorflow 模型已不可用，请下载最新版本模型
@@ -648,6 +651,58 @@ xmnlp.set_model('/path/to/xmnlp-models')
 >>> texts = ['开展公共资源交易活动监督检查和举报投拆处理。', '不能适应体育专业选拔人材的要求。', '比对整治前后影相资料。', '保护好堪查现场。']
 >>> print(list(xmnlp.checker_parallel(text)))
 [{(18, '拆'): [('资', 0.41119733452796936), ('诉', 0.21499130129814148), ('票', 0.11507325619459152), ('入', 0.07330290228128433), ('明', 0.009785536676645279)]}, {(11, '材'): [('才', 1.58528071641922), ('材', 1.0009655653266236), ('裁', 1.0000178480604518), ('员', 0.35814568400382996), ('士', 0.011077565141022205)]}, {(7, '相'): [('响', 1.1048823446035385), ('像', 1.0515491589903831), ('相', 1.000226703719818), ('乡', 1.0002082456485368), ('的', 0.29209405183792114)]}, {(3, '堪'): [('看', 1.0040899985469878), ('勘', 1.00186610117089), ('检', 0.16447395086288452), ('调', 0.1378173977136612), ('考', 0.0857236310839653)]}]
+```
+
+<a name="usage-sentence_vector"></a>
+### xmnlp.sv.SentenceVector(model_dir: Optional[str] = None, genre: str = '通用', max_length: int = 512)
+
+SentenceVector 初始化函数
+
+- model_dir: 模型保存地址，默认加载 xmnlp 提供的模型权重
+- genre: 内容类型，目前支持 ['通用', '金融', '国际'] 三种
+- max_length: 输入文本的最大长度，默认 512
+
+以下是 SentenceVector 的三个成员函数
+
+### xmnlp.sv.SentenceVector.transform(self, text: str) -> np.ndarray
+### xmnlp.sv.SentenceVector.similarity(self, x: Union[str, np.ndarray], y: Union[str, np.ndarray]) -> float
+### xmnlp.sv.SentenceVector.most_similar(self, query: str, docs: List[str], k: int = 1, **kwargs) -> List[Tuple[str, float]]
+
+- query: 查询内容
+- docs: 文档列表
+- k: 返回 topk 相似文本
+- kwargs: KDTree 的参数，详见 [sklearn.neighbors.KDTree](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KDTree.html)
+
+使用示例
+
+```python
+import numpy as np
+from xmnlp.sv import SentenceVector
+
+
+query = '我想买手机'
+docs = [
+    '我想买苹果手机',
+    '我喜欢吃苹果'
+]
+
+sv = SentenceVector(genre='通用')
+for doc in docs:
+    print('doc:', doc)
+    print('similarity:', sv.similarity(query, doc))
+print('most similar doc:', sv.most_similar(query, docs))
+print('query representation shape:', sv.transform(query).shape)
+```
+
+输出
+
+```
+doc: 我想买苹果手机
+similarity: 0.68668646
+doc: 我喜欢吃苹果
+similarity: 0.3020076
+most similar doc: [('我想买苹果手机', 16.255546509314417)]
+query representation shape: (312,)
 ```
 
 <a name="more"></a>

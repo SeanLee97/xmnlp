@@ -45,7 +45,7 @@ class CheckerDecoder:
     def __init__(self, model_dir):
         self.detector = DetectorModel(os.path.join(model_dir, 'detector.onnx'))
         self.corrector = CorrectorModel(os.path.join(model_dir, 'corrector.onnx'))
-        self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'))
+        self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'), lowercase=True)
         mask_id = self.tokenizer.encode('[MASK]').ids[1:-1]
         assert len(mask_id) == 1
         self.mask_id = mask_id[0]
