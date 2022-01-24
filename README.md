@@ -34,7 +34,7 @@
 - 情感分析 (RoBERTa finetune)
 - 文本转拼音 (Trie)
 - 汉字偏旁部首 (HashMap)
-- 句子表征及相似度计算
+- [句子表征及相似度计算](https://mp.weixin.qq.com/s/DFUXUnlH_5BlxwyQYeB2xw)
 
 
 <a name="outline"></a>
