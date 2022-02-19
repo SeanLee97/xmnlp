@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-bionic
+    runs-on: ubuntu-18.04
     container:
       image: docker.io/seanlee97/xmnlp:latest
     steps:
