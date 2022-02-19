@@ -101,3 +101,7 @@ ENV/
 .mypy_cache/
 
 .vscode
+
+# xmnlp models
+xmnlp-models
+xmnlp-onnx-models
