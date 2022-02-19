@@ -1,4 +1,4 @@
 tokenizers
 scikit-learn
 numpy
-onnxruntime
+onnxruntime==1.9.0
