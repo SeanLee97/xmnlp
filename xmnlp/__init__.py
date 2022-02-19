@@ -3,9 +3,8 @@
 # -------------------------------------------#
 # author: sean lee                           #
 # email: xmlee97@gmail.com                   #
-#--------------------------------------------#
+# -------------------------------------------#
 
-import os
 import concurrent.futures as futures
 from functools import partial
 from typing import (
@@ -20,23 +19,23 @@ from xmnlp import sentiment as _sentiment
 from xmnlp import pinyin as _pinyin
 from xmnlp import radical as _radical
 from xmnlp.utils import load_stopword
+from xmnlp.lexical.tokenization import Tokenization
 
 
 __author__ = 'Sean Lee <xmlee97@gmail.com>'
 __version__ = '0.4.0'
 
 
-seg = lexical.seg
-tag = lexical.tag
+tokenizer = Tokenization()
+seg = tokenizer.seg
+tag = tokenizer.tag
+deep_seg = lexical.deep_seg
+deep_tag = lexical.deep_tag
 ner = lexical.ner
 pinyin = _pinyin.translate
 radical = _radical.radical
 checker = _checker.spellcheck
 sentiment = _sentiment.sentiment
-
-
-def set_model(dirname: str) -> None:
-    config.MODEL_DIR = dirname
 
 
 def set_stopword(fpath: str) -> None:
@@ -71,6 +70,36 @@ def tag_parallel(texts: List[str], n_jobs: int = 2) -> Generator[List[Tuple[str,
         raise ValueError("You should pass a list of texts")
     with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
         for ret in executor.map(tag, texts):
+            yield ret
+
+
+def deep_seg_parallel(texts: List[str], n_jobs: int = 2) -> Generator[List[str], None, None]:
+    """deep_seg parallel
+    Args:
+      texts: List[str]
+      n_jobs: int, pool size of threads
+    Return:
+      Generator[List[str]]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for words in executor.map(deep_seg, texts):
+            yield words
+
+
+def deep_tag_parallel(texts: List[str], n_jobs: int = 2) -> Generator[List[Tuple[str, str]], None, None]:
+    """deep_tag parallel
+    Args:
+      texts: List[str]
+      n_jobs: int, pool size of threads
+    Return:
+      Generator[List[Tuple[str, str]]]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(deep_tag, texts):
             yield ret
 
 
@@ -219,9 +248,7 @@ def checker_parallel(texts: List[str],
                      k: int = 5,
                      max_k: int = 200,
                      n_jobs: int = 2) -> Generator[
-                        Union[List[Tuple[int, str]],
-                              Dict[Tuple[int, str], List[Tuple[str, float]]]
-                        ], None, None]:
+                         Union[ List[Tuple[int, str]], Dict[Tuple[int, str], List[Tuple[str, float]]]], None, None]:  # NOQA
     """checker parallel
     Args:
       texts: List[str]

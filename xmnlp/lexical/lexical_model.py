@@ -18,7 +18,7 @@ lexical
 
 import os
 import json
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 from tokenizers import BertWordPieceTokenizer
@@ -38,8 +38,8 @@ class LexicalModel(BaseModel):
                                                'Input-Segment:0': segment_ids})
 
 
-class LexicalDecoder:
-    def __init__(self, model_dir, starts=None, ends=None):
+class Lexical:
+    def __init__(self, model_dir: Optional[str] = None, starts=None, ends=None):
         self.trans = np.load(os.path.join(model_dir, 'trans.npy'))
         self.tokenizer = BertWordPieceTokenizer(os.path.join(model_dir, 'vocab.txt'), lowercase=True)
         self.lexical_model = LexicalModel(os.path.join(model_dir, 'lexical.onnx'))
