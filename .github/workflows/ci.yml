@@ -16,6 +16,7 @@ jobs:
           python3.8 setup.py install
       - name: pytest
         run: |
+          export XMNLP_MODEL=/home/xmnlp/xmnlp-onnx-models
           pytest --cov -vvvs tests
       - name: Lint
         run: |
