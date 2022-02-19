@@ -8,10 +8,11 @@ jobs:
     container:
       image: docker.io/seanlee97/xmnlp:latest
     steps:
+      - uses: actions/checkout@v1
       - name: Install dependencies
         run: |
           python3.8 -m pip install --upgrade pip
-          pip install -r /tmp/dev-requirements.txt
+          pip install -r dev-requirements.txt
           python3.8 setup.py install
       - name: pytest
         run: |
