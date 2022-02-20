@@ -19,7 +19,7 @@ from xmnlp.lexical.tokenization import Tokenization
 
 
 __author__ = 'Sean Lee <xmlee97@gmail.com>'
-__version__ = '0.4.1'
+__version__ = '0.5.0'
 
 
 tokenizer = Tokenization()
