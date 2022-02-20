@@ -4,7 +4,7 @@ import os
 import re
 from typing import Optional, List, Tuple
 
-from xmnlp import config
+from xmnlp.config.path import ROOT
 from xmnlp.lexical import deep_tag
 
 
@@ -21,7 +21,7 @@ class Tokenization:
           detect_new_word: bool, 是否识别新词, 默认 True
         """
         # dict.big.txt 是系统词库
-        vocab_paths = [os.path.join(config.MODEL_DIR, 'dict.big.txt')]
+        vocab_paths = [os.path.join(ROOT, 'dict.big.txt')]
         if user_vocab_path is not None:
             vocab_paths.append(user_vocab_path)
         self.word2tag, self.max_word_length = self.load_vocab(vocab_paths)
