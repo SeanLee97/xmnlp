@@ -41,6 +41,8 @@
 # Outline
 
 - [一. 安装](#installation)
+  - [模型下载](#installation-download)
+  - [配置模型](#installation-configure)
 - [二. 使用文档](#usage)
   - [默认分词：seg](#usage-seg)
     - [快速分词：fast_seg](#usage-fast_seg)
@@ -83,6 +85,48 @@ pip install -U xmnlp
 ```bash
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -U xmnlp
 ```
+
+<br />
+
+<a name="installation-download"></a>
+### 模型下载
+
+<br />请下载 xmnlp 对应版本的模型，如果不清楚 xmnlp 的版本，可以执行`python -c 'import xmnlp; print(xmnlp.__version__)'` 查看版本<br />
+
+
+| 模型名称 | 适用版本 | 下载地址 |
+| --- | --- | --- |
+| xmnlp-onnx-models-v5.zip | v0.5.0 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnppW9Vbd9SSoZEnJdP32Dsg) \[IGHI\] \| [百度网盘](https://pan.baidu.com/s/1YBqD-L5spNg0VOPSDPN3iA) \[l9id\] |
+| xmnlp-onnx-models-v4.zip | v0.4.0 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnwdZ9PTtCurhkddlsXrIr0c) \[DKLa\] \| [百度网盘](https://pan.baidu.com/s/1qIHDwXJv18AAv0w72FzrjQ) \[j1qi\] |
+| xmnlp-onnx-models-v3.zip | v0.3.2, v0.3.3 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnG5OVqqM8kxtQilt5DachE2) \[o4bA\] \| [百度网盘](https://pan.baidu.com/s/1DsIec7W5CEJ8UNInezgm0Q) \[9g7e\] |
+
+
+<a name="installation-configure"></a>
+### 配置模型
+
+下载模型后需要设置模型路径 xmnlp 才可以正常运行。提供两种配置方式
+
+**方式 1：配置环境变量（推荐）**
+
+<br />下载好的模型解压后，可以设置环境变量指定模型地址。以 Linux 系统为例，设置如下<br />
+
+```bash
+export XMNLP_MODEL=/path/to/xmnlp-models
+```
+
+
+**方式 2：通过函数设置**
+
+<br />在调用 xmnlp 前设置模型地址，如下<br />
+
+```python
+import xmnlp
+
+xmnlp.set_model('/path/to/xmnlp-models')
+```
+
+<br />* 上述 `/path/to/` 只是占位用的，配置时请替换成模型真实的目录地址。<br />
+
 
 
 <a name="usage"></a>

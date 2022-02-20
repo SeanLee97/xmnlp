@@ -40,7 +40,11 @@ checker = _checker.spellcheck
 sentiment = _sentiment.sentiment
 
 
-def set_stopword(fpath: str) -> None:
+def set_model(dirname: str):
+    config.MODEL_DIR = dirname
+
+
+def set_stopword(fpath: str):
     """set stopwords from file"""
     config.SYS_STOPWORDS = set(load_stopword(fpath)) | config.SYS_STOPWORDS
 
