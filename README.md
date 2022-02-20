@@ -104,7 +104,7 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -U xmnlp
 <a name="installation-configure"></a>
 ### 配置模型
 
-需要设置模型路径 xmnlp 才可以正常运行。提供两种配置方式
+下载模型后需要设置模型路径 xmnlp 才可以正常运行。提供两种配置方式
 
 **方式 1：配置环境变量（推荐）**
 
