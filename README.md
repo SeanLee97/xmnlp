@@ -41,8 +41,6 @@
 # Outline
 
 - [一. 安装](#installation)
-  - [安装库](#installation-library)
-  - [下载模型](#installation-download)
 - [二. 使用文档](#usage)
   - [默认分词：seg](#usage-seg)
     - [快速分词：fast_seg](#usage-fast_seg)
