@@ -7,7 +7,9 @@
 
 import os
 import re
-from typing import List, Generator
+import concurrent.futures as futures
+from functools import partial
+from typing import Any, Callable, List, Generator
 
 import numpy as np
 
@@ -72,14 +74,34 @@ def topK(matrix, K, axis=1):
         row_index = np.arange(matrix.shape[1 - axis])
         topk_index = np.argpartition(-matrix, K, axis=axis)[0:K, :]
         topk_data = matrix[topk_index, row_index]
-        topk_index_sort = np.argsort(-topk_data,axis=axis)
-        topk_data_sort = topk_data[topk_index_sort,row_index]
-        topk_index_sort = topk_index[0:K,:][topk_index_sort,row_index]
+        topk_index_sort = np.argsort(-topk_data, axis=axis)
+        topk_data_sort = topk_data[topk_index_sort, row_index]
+        topk_index_sort = topk_index[0:K, :][topk_index_sort, row_index]
     else:
         column_index = np.arange(matrix.shape[1 - axis])[:, None]
         topk_index = np.argpartition(-matrix, K, axis=axis)[:, 0:K]
         topk_data = matrix[column_index, topk_index]
         topk_index_sort = np.argsort(-topk_data, axis=axis)
         topk_data_sort = topk_data[column_index, topk_index_sort]
-        topk_index_sort = topk_index[:,0:K][column_index,topk_index_sort]
+        topk_index_sort = topk_index[:, 0:K][column_index, topk_index_sort]
     return topk_data_sort, topk_index_sort
+
+
+def parallel_handler(callback: Callable, texts: List[str], n_jobs: int = 2, **kwargs) -> Generator[
+    List[Any], None, None
+]:
+    """parallel handler
+    Args:
+      callback: callback function
+      texts: List[str]
+      n_jobs: int, pool size of threads
+    Return:
+      Generator[List[str]]
+    """
+    if not isinstance(texts, list):
+        raise ValueError("You should pass a list of texts")
+    if kwargs:
+        callback = partial(callback, **kwargs)
+    with futures.ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        for ret in executor.map(callback, texts):
+            yield ret

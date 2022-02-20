@@ -11,13 +11,13 @@ import threading
 from typing import List, Tuple
 
 from xmnlp import config
-from xmnlp.lexical.lexical_model import LexicalDecoder
+from xmnlp.lexical.lexical_model import Lexical
 
 
 NER_RULES = [
     ("EMAIL", re.compile(r"[a-zA-Z0-9\-_\.]+@[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_\.]+", re.IGNORECASE)),
     ("URL", re.compile(r"(?:http|ftp)s?://"  # http:// or https://
-                       r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{1,}\.?)|" # domain
+                       r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{1,}\.?)|"  # domain
                        r"localhost|"  # localhost
                        r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # or ip
                        r"(?::\d+)?"  # optional port
@@ -43,26 +43,25 @@ def load_lexical(reload: bool = False) -> None:
                 raise ValueError("Error: 模型地址未设置，请根据文档「安装」 -> 「下载模型」指引下载并配置模型。")
 
             print('Lazy load lexical...')
-            lexical = LexicalDecoder(
-                os.path.join(config.MODEL_DIR, 'lexical'), starts=[0], ends=[0])
+            lexical = Lexical(os.path.join(config.MODEL_DIR, 'lexical'))
 
 
-def seg(doc: str) -> List[str]:
+def deep_seg(doc: str) -> List[str]:
     """分词
     """
     load_lexical()
     doc = doc.strip()
-    return [w for w, _ in lexical.predict(doc)]
+    return [w for w, _ in lexical.predict(doc, with_position=False)]
 
 
-def tag(doc: str) -> List[Tuple[str, str]]:
+def deep_tag(doc: str) -> List[Tuple[str, str]]:
     """词性标注
     Args:
       doc: str
     Return: List[Tuple[str, str]], e.g., [(word, tag), ...]
     """
     load_lexical()
-    return [(w, TAG_MAP.get(t, t)) for w, t in lexical.predict(doc)]
+    return [(w, TAG_MAP.get(t, t)) for w, t in lexical.predict(doc, with_position=False)]
 
 
 def ner(doc: str) -> List[Tuple[str, str, int, int]]:
@@ -80,15 +79,15 @@ def ner(doc: str) -> List[Tuple[str, str, int, int]]:
     ret = []
     # rule
     for (mathches, tag) in [(r[1].finditer(doc), r[0]) for r in NER_RULES]:
-            for mathched in mathches:
-                span = mathched.span()
-                ret.append((doc[span[0]: span[1]], tag, span[0], span[1]))
+        for mathched in mathches:
+            span = mathched.span()
+            ret.append((doc[span[0]: span[1]], tag, span[0], span[1]))
     # model
     start_position = 0
-    for w, t in lexical.predict(doc):
+    for w, t in lexical.predict(doc, with_position=False):
         if t in TAG_MAP:
             ret.append((w, t, start_position, start_position + len(w)))
         start_position += len(w)
-    
+
     ret.sort(key=lambda x: (x[2], x[3]))
     return ret

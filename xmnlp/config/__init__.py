@@ -7,7 +7,7 @@ from xmnlp.utils import load_stopword
 
 
 # 模型地址配置
-MODEL_DIR = os.getenv('XMNLP_MODEL', None)
+MODEL_DIR = os.path.join(path.ROOT, 'xmnlp-onnx-models')
 ALLOW_POS = ['an', 'i', 'j', 'l', 'n', 'nr', 'ns', 'nt', 'nz',
              't', 'v', 'vd', 'vn', 'x', 'nn', 'g']
 SYS_STOPWORDS = load_stopword(path.stopword['corpus']['stopword'])

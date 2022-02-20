@@ -11,12 +11,12 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: |
+          cp -r /home/xmnlp/xmnlp-onnx-models xmnlp/xmnlp-onnx-models
           python3.8 -m pip install --upgrade pip
           pip install -r dev-requirements.txt
           python3.8 setup.py install
       - name: pytest
         run: |
-          export XMNLP_MODEL=/home/xmnlp/xmnlp-onnx-models
           pytest --cov -vvvs tests
       - name: Lint
         run: |

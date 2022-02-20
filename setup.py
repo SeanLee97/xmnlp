@@ -34,6 +34,22 @@ setup(
     platforms=['all'],
     url='https://github.com/SeanLee97/xmnlp',
     packages=find_packages(exclude=('test*', )),
+    package_data={
+        'xmnlp': [
+            'xmnlp-onnx-models/checker/corrector.onnx',
+            'xmnlp-onnx-models/checker/detector.onnx',
+            'xmnlp-onnx-models/checker/vocab.txt',
+            'xmnlp-onnx-models/dict.big.txt',
+            'xmnlp-onnx-models/lexical/lexical.onnx',
+            'xmnlp-onnx-models/lexical/vocab.txt',
+            'xmnlp-onnx-models/lexical/label2id.json',
+            'xmnlp-onnx-models/sentence_vector/model.onnx',
+            'xmnlp-onnx-models/sentence_vector/vocab.txt',
+            'xmnlp-onnx-models/sentiment/sentiment.onnx',
+            'xmnlp-onnx-models/sentiment/vocab.txt',
+        ],
+        '': ['*.txt', '*.pickle']
+    },
     classifiers=[
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
@@ -49,6 +65,4 @@ setup(
     ],
     install_requires=requirements,
     tests_require=test_requirements,
-    package_data={'': ['*.md', '*.txt', '*.pickle']},
-    include_package_data=True,
 )
