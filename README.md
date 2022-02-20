@@ -246,7 +246,7 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -U xmnlp
 <br />
 
 
-<a name="usage-deep_tag"></a>
+<a name="usage-userdict"></a>
 ### 分词&词性标注自定义字典
 
 支持用户自定义字典，字典格式为
