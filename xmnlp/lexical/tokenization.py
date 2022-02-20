@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 from typing import Optional, List, Tuple
 
 from xmnlp import config
 from xmnlp.lexical import deep_tag
+
+
+re_english = re.compile(r'[a-zA-Z0-9]+')
 
 
 class Tokenization:
@@ -23,33 +27,48 @@ class Tokenization:
         self.word2tag, self.max_word_length = self.load_vocab(vocab_paths)
         self.new_word_kernel = deep_tag if detect_new_word else None
 
-    def seg(self, sentence: str) -> List[str]:
-        """ seg sentence
+    def seg(self, doc: str) -> List[str]:
+        """ seg document
         Args:
-          sentence: str, input sentence
+          doc: str, input document
         """
-        return [w[0] for w in self.tag(sentence)]
+        return [w[0] for w in self.tag(doc)]
 
-    def tag(self, sentence: str) -> List[Tuple[str, str]]:
-        """ tag sentence
+    def tag(self, doc: str) -> List[Tuple[str, str]]:
+        """ tag doc
         Args:
-          sentence: str, input sentence
+          doc: str, input doc
         """
         words = []
-        word_length = len(sentence)
+        word_length = len(doc)
         while word_length > 0:
             N = min(self.max_word_length, word_length)
-            word = sentence[-N:]
+            word = doc[-N:]
             while N > 0:
                 if word in self.word2tag or N == 1:
                     words.append(word)
                     break
                 N -= 1
                 word = word[-N:]
-            sentence = sentence[:-N]
+            doc = doc[:-N]
             word_length -= N
 
-        words = words[::-1]
+        # 合并英文和数字
+        combine_words = []
+        tmp = ''
+        for w in words[::-1]:
+            if w.encode('utf-8').isalpha() or w.isdigit():
+                tmp += w
+            else:
+                if tmp:
+                    combine_words.append((tmp, 'eng'))
+                if w.strip():
+                    combine_words.append((w, self.word2tag.get(w, 'x')))
+                tmp = ''
+        if tmp:
+            combine_words.append((tmp, 'eng'))
+        words = combine_words
+
         if self.new_word_kernel is None:
             return words
 
@@ -58,20 +77,20 @@ class Tokenization:
         N = len(words)
         i = 0
         while i < N:
-            if len(words[i]) > 1:
-                final_words.append((words[i], self.word2tag.get(words[i], 'x')))
+            if len(words[i][0]) > 1:
+                final_words.append(words[i])
                 i += 1
                 continue
             for j in range(i + 1, N):
-                if len(words[j]) > 1:
+                if len(words[j][0]) > 1:
                     break
             if i + 1 == j:
-                final_words.append((words[i], self.word2tag.get(words[i], 'x')))
+                final_words.append(words[i])
             elif i + 1 == N:
-                final_words.append((words[i], self.word2tag.get(words[i], 'x')))
+                final_words.append(words[i])
                 break
             else:
-                sequence = ''.join(words[i:j])
+                sequence = ''.join([t[0] for t in words[i:j]])
                 final_words += self.new_word_kernel(sequence)
             i = j
         return final_words

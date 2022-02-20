@@ -43,7 +43,6 @@ setup(
             'xmnlp-onnx-models/lexical/lexical.onnx',
             'xmnlp-onnx-models/lexical/vocab.txt',
             'xmnlp-onnx-models/lexical/label2id.json',
-            'xmnlp-onnx-models/lexical/trans.npy',
             'xmnlp-onnx-models/sentence_vector/model.onnx',
             'xmnlp-onnx-models/sentence_vector/vocab.txt',
             'xmnlp-onnx-models/sentiment/sentiment.onnx',

@@ -50,6 +50,7 @@
   - [词性标注：tag](#usage-tag)
     - [快速词性标注：fast_tag](#usage-fast_tag)
     - [深度词性标注：deep_tag](#usage-deep_tag)
+  - [分词&词性标注自定义字典](#usage-userdict)
   - [命名体识别：ner](#usage-ner)
   - [关键词提取：keyword](#usage-keyword)
   - [关键语句提取：keyphrase](#usage-keyphrase)
@@ -240,6 +241,44 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -U xmnlp
 >>> text = """xmnlp 是一款开箱即用的轻量级中文自然语言处理工具🔧。"""
 >>> print(xmnlp.deep_tag(text))
 [('xmnlp', 'x'), ('是', 'v'), ('一款', 'm'), ('开箱', 'v'), ('即用', 'v'), ('的', 'u'), ('轻', 'nz'), ('量级', 'b'), ('中文', 'nz'), ('自然', 'n'), ('语言', 'n'), ('处理', 'v'), ('工具', 'n'), ('🔧', 'w'), ('。', 'w')]
+```
+
+<br />
+
+
+<a name="usage-deep_tag"></a>
+### 分词&词性标注自定义字典
+
+支持用户自定义字典，字典格式为
+
+```
+词1 词性1
+词2 词性2
+```
+
+也兼容 jieba 分词的字典格式
+
+```
+词1 词性1 词频
+词2 词性2 词频
+```
+
+注：上述行内的间隔符为空格
+
+
+<br />**使用示例：**<br />
+
+```python
+from xmnlp.lexical.tokenization import Tokenization
+
+# 定义 tokenizer
+# detect_new_word 定义是否识别新词，默认 True， 设为 False 时速度会更快
+tokenizer = Tokenization(user_dict_path, detect_new_word=True)
+
+# 分词
+tokenizer.seg(texts)
+# 词性标注
+tokenizer.tag(texts)
 ```
 
 <br />

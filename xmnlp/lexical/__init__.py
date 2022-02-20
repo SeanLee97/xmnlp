@@ -43,8 +43,7 @@ def load_lexical(reload: bool = False) -> None:
                 raise ValueError("Error: 模型地址未设置，请根据文档「安装」 -> 「下载模型」指引下载并配置模型。")
 
             print('Lazy load lexical...')
-            lexical = Lexical(
-                os.path.join(config.MODEL_DIR, 'lexical'), starts=[0], ends=[0])
+            lexical = Lexical(os.path.join(config.MODEL_DIR, 'lexical'))
 
 
 def deep_seg(doc: str) -> List[str]:
@@ -52,7 +51,7 @@ def deep_seg(doc: str) -> List[str]:
     """
     load_lexical()
     doc = doc.strip()
-    return [w for w, _ in lexical.predict(doc)]
+    return [w for w, _ in lexical.predict(doc, with_position=False)]
 
 
 def deep_tag(doc: str) -> List[Tuple[str, str]]:
@@ -62,7 +61,7 @@ def deep_tag(doc: str) -> List[Tuple[str, str]]:
     Return: List[Tuple[str, str]], e.g., [(word, tag), ...]
     """
     load_lexical()
-    return [(w, TAG_MAP.get(t, t)) for w, t in lexical.predict(doc)]
+    return [(w, TAG_MAP.get(t, t)) for w, t in lexical.predict(doc, with_position=False)]
 
 
 def ner(doc: str) -> List[Tuple[str, str, int, int]]:
@@ -85,7 +84,7 @@ def ner(doc: str) -> List[Tuple[str, str, int, int]]:
             ret.append((doc[span[0]: span[1]], tag, span[0], span[1]))
     # model
     start_position = 0
-    for w, t in lexical.predict(doc):
+    for w, t in lexical.predict(doc, with_position=False):
         if t in TAG_MAP:
             ret.append((w, t, start_position, start_position + len(w)))
         start_position += len(w)
