@@ -1,4 +1,4 @@
-<p align='center'><img src='docs/xmnlp-logo.png' width=300 /></p>
+<p align='center'><img src='docs/xmnlp-logo.png' width=350 /></p>
 
 <p align='center'>xmnlp: 一款开箱即用的开源中文自然语言处理工具包</p>
 
