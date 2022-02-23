@@ -72,8 +72,6 @@
 <a name="installation"></a>
 ## 一. 安装
 
-通过 pip 一键安装 xmnlp，模型已包含在安装包中，无需另外下载
-
 <br />安装最新版 xmnlp<br />
 
 ```bash
@@ -85,6 +83,8 @@ pip install -U xmnlp
 ```bash
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -U xmnlp
 ```
+
+安装完包之后，还需要下载模型权重才可正常使用
 
 <br />
 
