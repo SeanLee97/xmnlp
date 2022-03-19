@@ -75,14 +75,15 @@ class Tokenization:
         # new words detect
         final_words = []
         N = len(words)
-        i = 0
+        i, j = 0, 0
         while i < N:
             if len(words[i][0]) > 1:
                 final_words.append(words[i])
                 i += 1
                 continue
-            for j in range(i + 1, N):
-                if len(words[j][0]) > 1:
+            for k in range(i + 1, N):
+                j = k
+                if len(words[k][0]) > 1:
                     break
             if i + 1 == j:
                 final_words.append(words[i])
