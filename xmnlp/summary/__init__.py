@@ -7,7 +7,7 @@
 
 from typing import List, Tuple, Optional
 
-import xmnlp
+from xmnlp.lexical import tag
 from xmnlp.summary.textrank import TextRank, KeywordTextRank
 from xmnlp.utils import split_text
 
@@ -31,8 +31,8 @@ def keyword(text: str,
     if allowPOS is None:
         allowPOS = []
     words = []
-    for ret in xmnlp.tag_parallel(split_text(text)):
-        for w, t in ret:
+    for text in split_text(text):
+        for w, t in tag(text):
             if w not in stopword and t in allowPOS:
                 words.append(w)
 
@@ -58,7 +58,7 @@ def keyphrase(text: str,
     docs = []
     for sent in split_text(text):
         words = []
-        for word, _ in xmnlp.tag(sent):
+        for word, _ in tag(sent):
             if word not in stopword:
                 words.append(word)
         docs.append(words)

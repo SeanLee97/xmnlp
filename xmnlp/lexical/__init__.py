@@ -91,3 +91,14 @@ def ner(doc: str) -> List[Tuple[str, str, int, int]]:
 
     ret.sort(key=lambda x: (x[2], x[3]))
     return ret
+
+
+# init tokenizations
+from xmnlp.lexical.tokenization import Tokenization  # NOQA
+
+tokenizer = Tokenization()
+seg = tokenizer.seg
+tag = tokenizer.tag
+fast_tokenizer = Tokenization(detect_new_word=False)
+fast_seg = fast_tokenizer.seg
+fast_tag = fast_tokenizer.tag
