@@ -5,6 +5,10 @@
 # email: xmlee97@gmail.com                   #
 # -------------------------------------------#
 
+__author__ = 'Sean Lee <xmlee97@gmail.com>'
+__version__ = '0.5.1'
+
+
 from typing import List, Tuple, Optional
 
 from xmnlp import config
@@ -15,21 +19,12 @@ from xmnlp import sentiment as _sentiment
 from xmnlp import pinyin as _pinyin
 from xmnlp import radical as _radical
 from xmnlp.utils import load_stopword
-from xmnlp.lexical.tokenization import Tokenization
 
 
-__author__ = 'Sean Lee <xmlee97@gmail.com>'
-__version__ = '0.5.1'
-
-
-tokenizer = Tokenization()
-seg = tokenizer.seg
-tag = tokenizer.tag
-
-fast_tokenizer = Tokenization(detect_new_word=False)
-fast_seg = fast_tokenizer.seg
-fast_tag = fast_tokenizer.tag
-
+seg = lexical.seg
+tag = lexical.tag
+fast_seg = lexical.fast_seg
+fast_tag = lexical.fast_tag
 deep_seg = lexical.deep_seg
 deep_tag = lexical.deep_tag
 ner = lexical.ner

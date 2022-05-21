@@ -238,3 +238,21 @@ def test_userdict():
     tokenizer = Tokenization('tests/userdict.txt', detect_new_word=False)
     assert tokenizer.seg('冰墩墩和雪容融是北京冬奥会吉祥物') == ['冰墩墩', '和', '雪容融', '是', '北京', '冬奥会', '吉祥物']  # NOQA
     assert tokenizer.tag('冰墩墩和雪容融是北京冬奥会吉祥物') == [('冰墩墩', 'nz'), ('和', 'c'), ('雪容融', 'nz'), ('是', 'v'), ('北京', 'ns'), ('冬奥会', 'j'), ('吉祥物', 'nr')]  # NOQA
+
+
+def test_keyword():
+    import xmnlp
+
+    doc = '''自然语言处理: 是人工智能和语言学领域的分支学科。在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。
+    自然语言生成系统把计算机数据转化为自然语言。自然语言理解系统把自然语言转化为计算机程序更易于处理的形式。'''
+    ret = xmnlp.keyword(doc)
+    assert ret[0][0] == '自然语言'
+
+
+def test_keyphrase():
+    import xmnlp
+
+    doc = '''自然语言处理: 是人工智能和语言学领域的分支学科。在这此领域中探讨如何处理及运用自然语言；自然语言认知则是指让电脑“懂”人类的语言。
+    自然语言生成系统把计算机数据转化为自然语言。自然语言理解系统把自然语言转化为计算机程序更易于处理的形式。'''
+    ret = xmnlp.keyphrase(doc, k=1)
+    assert ret[0] == '自然语言理解系统把自然语言转化为计算机程序更易于处理的形式'
