@@ -96,7 +96,7 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -U xmnlp
 
 | 模型名称 | 适用版本 | 下载地址 |
 | --- | --- | --- |
-| xmnlp-onnx-models-v5.zip | v0.5.0, v0.5.1 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnppW9Vbd9SSoZEnJdP32Dsg) \[IGHI\] \| [百度网盘](https://pan.baidu.com/s/1YBqD-L5spNg0VOPSDPN3iA) \[l9id\] |
+| xmnlp-onnx-models-v5.zip | v0.5.0, v0.5.1, v0.5.2 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnppW9Vbd9SSoZEnJdP32Dsg) \[IGHI\] \| [百度网盘](https://pan.baidu.com/s/1YBqD-L5spNg0VOPSDPN3iA) \[l9id\] |
 | xmnlp-onnx-models-v4.zip | v0.4.0 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnwdZ9PTtCurhkddlsXrIr0c) \[DKLa\] \| [百度网盘](https://pan.baidu.com/s/1qIHDwXJv18AAv0w72FzrjQ) \[j1qi\] |
 | xmnlp-onnx-models-v3.zip | v0.3.2, v0.3.3 | [飞书](https://wao3cag89c.feishu.cn/file/boxcnG5OVqqM8kxtQilt5DachE2) \[o4bA\] \| [百度网盘](https://pan.baidu.com/s/1DsIec7W5CEJ8UNInezgm0Q) \[9g7e\] |
 
