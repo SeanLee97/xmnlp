@@ -54,8 +54,9 @@ class KeywordTextRank:
             Z = 0
             for i in range(self.matrix.shape[0]):
                 Z += self.matrix[i][j]
-            for i in range(self.matrix.shape[0]):
-                self.matrix[i][j] /= Z
+            if Z != 0:
+                for i in range(self.matrix.shape[0]):
+                    self.matrix[i][j] /= Z
 
     def calc_pr(self):
         self.PR = np.ones([len(self.vertex), 1])
