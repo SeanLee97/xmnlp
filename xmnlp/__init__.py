@@ -6,7 +6,7 @@
 # -------------------------------------------#
 
 __author__ = 'Sean Lee <xmlee97@gmail.com>'
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 
 from typing import List, Tuple, Optional
