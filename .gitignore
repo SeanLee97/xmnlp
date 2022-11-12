@@ -100,7 +100,9 @@ ENV/
 # mypy
 .mypy_cache/
 
+# Editors & IDEs
 .vscode
+.idea
 
 # xmnlp models
 xmnlp-models
